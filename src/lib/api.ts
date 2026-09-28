@@ -32,6 +32,7 @@ export async function generateAnswer(args: GenerateArgs, onDelta?: (text: string
     const error = new Error(message) as Error & { status?: number; code?: string }
     error.status = response.status
     error.code = body?.code
+    ;(error as any).details = body
     throw error
   }
 
