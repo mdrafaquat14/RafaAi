@@ -35,7 +35,8 @@ export default function App() {
   const signedIn = Boolean(user)
 
   useEffect(()=>{ document.documentElement.dataset.theme=theme; storage.saveTheme(theme) },[theme])
-  useEffect(()=>{ storage.saveChats(chats) },[chats])\n  useEffect(()=>{
+  useEffect(()=>{ storage.saveChats(chats) },[chats])
+  useEffect(()=>{
     const onKey=(event:KeyboardEvent)=>{ if(event.key==='Escape'){setSidebarOpen(false);setSidebarCollapsed(true)} }
     const onPointerDown=(event:PointerEvent)=>{
       const target=event.target as HTMLElement|null
