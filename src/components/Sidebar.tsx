@@ -33,11 +33,10 @@ export function Sidebar({open,collapsed,chats,activeId,onCollapse,onNew,onSelect
       <div className="sidebar-spacer"/>
       <div className="sidebar-links">
         <button className="side-link" onClick={()=>window.open('https://rafafocus.vercel.app','_blank','noopener,noreferrer')}><BookOpen/><span>Open RafaFocus</span></button>
-        <button className="side-link" onClick={onSettings}><Settings/><span>Settings</span></button>
       </div>
     </div>
     <div className="sidebar-footer">
-      {userName?<button className="profile-row" onClick={onSettings}><span className="avatar">{userName.slice(0,1).toUpperCase()}</span><span className="profile-copy"><b>{userName}</b><small>Account & settings</small></span></button>:<button className="sidebar-login" onClick={onLogin}><span>Log in</span><span>→</span></button>}
+      {userName?<button className="side-link sidebar-settings-bottom" onClick={onSettings}><Settings/><span>Settings</span></button>:<button className="sidebar-login" onClick={onLogin}><span>Log in</span><span>→</span></button>}
     </div>
   </aside>
 }
