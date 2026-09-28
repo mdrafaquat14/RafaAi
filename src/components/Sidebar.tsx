@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { ChatSession } from '../types'
 import { Logo } from './Logo'
-import { BookOpen, ChevronLeft, MessageSquare, More, Plus, Search, Settings, Trash, X } from './Icons'
+import { BookOpen, ChevronLeft, MessageSquare, More, Plus, Search, Settings, Trash } from './Icons'
 
 interface Props {
   open:boolean; collapsed:boolean; chats:ChatSession[]; activeId:string|null; onClose:()=>void; onCollapse:()=>void; onNew:()=>void; onSelect:(id:string)=>void; onDelete:(id:string)=>void; onRename:(id:string,title:string)=>void; onLogin:()=>void; onSettings:()=>void; userName:string|null; onLogout:()=>void
@@ -13,7 +13,6 @@ export function Sidebar({open,collapsed,chats,activeId,onClose,onCollapse,onNew,
     <div className="sidebar-head">
       <button className="brand-button" onClick={onNew} aria-label="New chat"><Logo compact />{!collapsed&&<span className="brand-head-name">RafaAi</span>}</button>
       <button className="icon-button sidebar-collapse" onClick={onCollapse} aria-label={collapsed?'Expand sidebar':'Collapse sidebar'}>{collapsed?<span className="collapse-glyph">›</span>:<ChevronLeft/>}</button>
-      <button className="icon-button sidebar-close-mobile" onClick={onClose} aria-label="Close menu"><X/></button>
     </div>
     <div className="sidebar-body">
       <button className="new-chat-button" onClick={onNew}><Plus/><span>New chat</span></button>
