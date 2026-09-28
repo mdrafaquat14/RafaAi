@@ -101,12 +101,12 @@ export default function App() {
     supabase.auth.getSession().then(async ({data})=>{
       const session=data.session
       setUser(session?.user?{id:session.user.id,email:session.user.email}:null)
-      if(session?.user) { setProfile(await getProfile(session.user.id).catch(()=>null)); setTimeout(refreshCredits,0) }
+      if(session?.user) { const p=await getProfile(session.user.id).catch(()=>null); setProfile(p); if(p?.role==='admin'){ setCreditStatus({ready:true,unlimited:true,remaining:null,limit:null,reset_at:null}); setCreditLimitReached(false) } else setTimeout(refreshCredits,0) }
     })
     const {data:listener}=supabase.auth.onAuthStateChange(async (event,session)=>{
       if(event==='PASSWORD_RECOVERY') setAuthOpen(true)
       setUser(session?.user?{id:session.user.id,email:session.user.email}:null)
-      if(session?.user) { setProfile(await getProfile(session.user.id).catch(()=>null)); setTimeout(refreshCredits,0) }
+      if(session?.user) { const p=await getProfile(session.user.id).catch(()=>null); setProfile(p); if(p?.role==='admin'){ setCreditStatus({ready:true,unlimited:true,remaining:null,limit:null,reset_at:null}); setCreditLimitReached(false) } else setTimeout(refreshCredits,0) }
       else { setProfile(null); setCreditStatus(null); setCreditLimitReached(false) }
     })
     return ()=>listener.subscription.unsubscribe()
@@ -123,7 +123,7 @@ export default function App() {
       }
     }catch{}
   }
-  useEffect(()=>{if(user) refreshCredits()},[user?.id])
+  useEffect(()=>{if(user && profile?.role !== 'admin') refreshCredits()},[user?.id])
   // Keep the limit screen in sync with admin approvals/credit changes without requiring a reload.
   useEffect(()=>{
     if(!user || !creditLimitReached) return
@@ -159,7 +159,7 @@ export default function App() {
   async function send(text=input) {
     const clean=text.trim(); if(!clean || busy)return
     if(!signedIn && guestReplies>=5){setAuthOpen(true);return}
-    if(signedIn && creditLimitReached){setError('Your daily AI credit limit has been reached.');return}
+    if(signedIn && profile?.role !== 'admin' && creditLimitReached){setError('Your daily AI credit limit has been reached.');return}
     setError('')
     const chat=ensureChat(clean)
     const attachmentDataUrl = attachment ? await fileToDataUrl(attachment) : undefined
@@ -212,14 +212,16 @@ export default function App() {
   function feedback(id:string,value:boolean){if(!activeChat)return;updateChat({...activeChat,messages:activeChat.messages.map(m=>m.id===id?{...m,liked:value}:m)})}
   function prompt(text:string,m:PromptMode){setMode(m);setInput(text);setTimeout(()=>document.querySelector<HTMLTextAreaElement>('.composer textarea')?.focus(),0)}
   const composer=<Composer value={input} onChange={setInput} onSend={()=>send()} busy={busy} mode={mode} setMode={setMode} attachment={attachment} setAttachment={setAttachment} onStop={stop}/>
-  const creditMeter = signedIn ? (
+  const creditMeter = profile?.role === 'admin' ? null : signedIn ? (
     <div className={creditStatus?.unlimited ? 'credit-live unlimited' : 'credit-live'}><span className="credit-live-dot"></span><b>{creditStatus?.unlimited ? 'Unlimited AI' : (creditStatus?.remaining ?? '—') + ' credits left'}</b>{!creditStatus?.unlimited && <span>of {creditStatus?.limit ?? 20} today</span>}</div>
   ) : (
     <div className="credit-live guest"><span className="credit-live-dot"></span><b>{Math.max(0,5-guestReplies)} guest replies left</b></div>
   )
-  const composerArea = creditLimitReached
-    ? <CreditLimit status={creditStatus} onRequest={requestMoreAccess}/>
-    : <><div className="composer-credit-row">{creditMeter}</div>{composer}</>
+  const composerArea = profile?.role === 'admin'
+    ? composer
+    : creditLimitReached
+      ? <CreditLimit status={creditStatus} onRequest={requestMoreAccess}/>
+      : <><div className="composer-credit-row">{creditMeter}</div>{composer}</>
 
   return (
     <div className="app-shell">
