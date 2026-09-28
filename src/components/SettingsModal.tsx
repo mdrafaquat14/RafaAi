@@ -19,7 +19,7 @@ export function SettingsModal({onClose,theme,setTheme,onChatsCleared,userName,cl
    try{
      const {data,error}=await supabase.functions.invoke('rafaai-account',{body:{fullName:name.trim(),classLevel:studentClass.trim()}})
      if(error)throw error
-     if(password.trim()){if(password.length<6)throw new Error('Password must be at least 6 characters.');const {error:pe}=await supabase.auth.updateUser({password});if(pe)throw pe}
+     if(password.trim()){if(!oldPassword)throw new Error('Enter your old password first.');if(password.length<6)throw new Error('New password must be at least 6 characters.');const {error:verifyError}=await supabase.auth.signInWithPassword({email,password:oldPassword});if(verifyError)throw new Error('Old password is incorrect. Use Forgot password on the login page if you cannot verify it.');const {error:pe}=await supabase.auth.updateUser({password});if(pe)throw pe}
      const nextName=String(data?.profile?.full_name||name.trim()),nextClass=String(data?.profile?.class_level||studentClass.trim())
      setName(nextName);setStudentClass(nextClass);setPassword('');onProfileUpdated(nextName,nextClass);setSaved(true);setTimeout(()=>setSaved(false),1200)
    }catch(err:any){setAccountError(err?.message||'Could not update your account.')}finally{setAccountBusy(false)}
@@ -32,7 +32,7 @@ export function SettingsModal({onClose,theme,setTheme,onChatsCleared,userName,cl
    {tab==='user'?<>
     <div className="settings-section"><h3>Account</h3><div className="account-panel"><div className="account-avatar">{(name||email||'G').slice(0,1).toUpperCase()}</div><div><b>{name||'User'}</b><span>{email||'Not signed in'}</span>{studentClass&&<small>{studentClass}</small>}</div></div></div>
     <div className="settings-section"><h3>Profile</h3><p>Change the name and class shown in your RafaAi account.</p><div className="settings-form-grid"><label>Name<input value={name} onChange={e=>setName(e.target.value)} placeholder="Your name"/></label><label>Class<input value={studentClass} onChange={e=>setStudentClass(e.target.value)} placeholder="e.g. Class 10 / Matric"/></label></div></div>
-    <div className="settings-section"><h3>Password</h3><p>Enter a new password only if you want to change it.</p><label>Password<input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="New password (6+ characters)" minLength={6} autoComplete="new-password"/></label></div>
+    <div className="settings-section"><h3>Password</h3><p>Small password change option — your old password must be verified first.</p><label>Old password<input type="password" value={oldPassword} onChange={e=>setOldPassword(e.target.value)} placeholder="Current password" autoComplete="current-password"/></label><label>New password<input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="New password (6+ characters)" minLength={6} autoComplete="new-password"/></label></div>
     {accountError&&<div className="form-error">{accountError}</div>}
     <button className="primary-wide settings-save-account" onClick={saveAccount} disabled={accountBusy||!email}>{accountBusy?'Saving…':saved?'Saved ✓':'Save account changes'}</button>
     <div className="settings-section settings-danger-section"><h3>Session</h3><p>Log out of this RafaAi account on this device.</p><button className="danger-wide logout-wide" onClick={()=>setLogoutOpen(true)}><LogOut size={17}/> Log out</button></div>
