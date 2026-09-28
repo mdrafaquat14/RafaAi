@@ -146,7 +146,7 @@ export default function App() {
       {activeChat&&<div className="composer-area"><div className="guest-meter">{!signedIn?<><span>{guestReplies<5?`${5-guestReplies} guest repl${5-guestReplies===1?'y':'ies'} remaining`:'Guest limit reached'}</span><button onClick={()=>setAuthOpen(true)}>{guestReplies>=5?'Log in':'Create account'}</button></>:<span>Signed in · no RafaAi-side message limit</span>}</div>{composer}</div>}
     </main>
     {authOpen&&<AuthModal onClose={()=>setAuthOpen(false)}/>} 
-    {settingsOpen&&<SettingsModal onClose={()=>setSettingsOpen(false)} theme={theme} setTheme={setTheme} onChatsCleared={()=>{setChats([]);setActiveId(null);setSettingsOpen(false)}} userName={profile?.full_name||user?.email?.split('@')[0]||null} classLevel={profile?.class_level||null} email={user?.email||null} onLogout={signOut}/>}
+    {settingsOpen&&<SettingsModal onClose={()=>setSettingsOpen(false)} theme={theme} setTheme={setTheme} onChatsCleared={()=>{setChats([]);setActiveId(null);setSettingsOpen(false)}} userName={profile?.full_name||user?.email?.split('@')[0]||null} classLevel={profile?.class_level||null} email={user?.email||null} onProfileUpdated={(name,classLevel)=>setProfile(prev=>prev?{...prev,full_name:name,class_level:classLevel}:prev)} onLogout={signOut}/>}
   </div>
 }
 function fileToDataUrl(file:File):Promise<string>{return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result));r.onerror=reject;r.readAsDataURL(file)})}
