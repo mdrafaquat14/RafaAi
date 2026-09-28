@@ -9,7 +9,7 @@ interface Props {
 export function Sidebar({open,collapsed,chats,activeId,onClose,onCollapse,onNew,onSelect,onDelete,onRename,onLogin,onSettings,userName,onLogout}:Props){
   const [query,setQuery]=useState(''); const [menuId,setMenuId]=useState<string|null>(null)
   const filtered=useMemo(()=>chats.filter(c=>c.title.toLowerCase().includes(query.toLowerCase())),[chats,query])
-  return <aside className={`sidebar ${open?'is-open':''} ${collapsed?'is-collapsed':''}`}>
+  return <aside className={`sidebar ${open?'is-open':''} ${collapsed?'is-collapsed':''}`} onClick={()=>{if(collapsed) onCollapse()}} onTouchStart={()=>{if(collapsed) onCollapse()}}>
     <div className="sidebar-head">
       <button className="brand-button" onClick={()=>collapsed?onCollapse():onNew()} aria-label={collapsed?'Open sidebar':'New chat'}><Logo compact />{!collapsed&&<span className="brand-head-name">RafaAi</span>}</button>
       <button className="icon-button sidebar-collapse" onClick={onCollapse} aria-label={collapsed?'Expand sidebar':'Collapse sidebar'}>{collapsed?<span className="collapse-glyph">›</span>:<ChevronLeft/>}</button>
