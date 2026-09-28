@@ -73,17 +73,19 @@ export default function App() {
     const imageDataUrl = attachment && attachment.type.startsWith('image/') ? await fileToDataUrl(attachment) : undefined
     const userMsg:ChatMessage={id:uid(),role:'user',content:clean,createdAt:Date.now(),attachmentName:attachment?.name,imageDataUrl}
     const nextMessages=[...chat.messages,userMsg]
-    updateChat({...chat,messages:nextMessages,updatedAt:Date.now()})
+    const assistantId=uid()
+    const withPlaceholder=[...nextMessages,{id:assistantId,role:'assistant' as const,content:'',createdAt:Date.now()}]
+    updateChat({...chat,messages:withPlaceholder,updatedAt:Date.now()})
     setInput(''); setAttachment(null); setBusy(true)
     try {
       if(!isSupabaseConfigured) throw new Error('RafaAi backend is not connected yet. Add the Supabase environment variables from .env.example.')
       const contents=[{role:'user',parts:[{text:`[RafaAi behavior instructions — follow internally]\n${RAFAAI_IDENTITY}`}]},...nextMessages.map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}, ...(m.role==='user' && m.imageDataUrl ? [{inline_data: dataUrlToInlineData(m.imageDataUrl)}] : [])]}))]
-      const payload=await generateAnswer({contents,guest:!signedIn,guestQuestionNumber:!signedIn?guestReplies+1:undefined,classLevel:profile?.class_level||undefined,mode})
-      const answer=extractText(payload)
-      const assistant:ChatMessage={id:uid(),role:'assistant',content:answer,createdAt:Date.now()}
-      updateChat({...chat,messages:[...nextMessages,assistant],updatedAt:Date.now()})
+      await generateAnswer({contents,guest:!signedIn,guestQuestionNumber:!signedIn?guestReplies+1:undefined,classLevel:profile?.class_level||undefined,mode},(delta)=>{
+        setChats(prev=>prev.map(c=>c.id===chat.id?{...c,messages:c.messages.map(m=>m.id===assistantId?{...m,content:m.content+delta}:m),updatedAt:Date.now()}:c))
+      })
       if(!signedIn){const next=storage.incrementGuestReplies();setGuestReplies(next)}
     } catch(err:any) {
+      setChats(prev=>prev.map(c=>c.id===chat.id?{...c,messages:c.messages.filter(m=>m.id!==assistantId),updatedAt:Date.now()}:c))
       if(err?.status===401){setAuthOpen(true);setError('Please log in to continue.');return}
       if(err?.status===403){setError('This account is currently restricted from using RafaAi.');return}
       setError(err?.message||'Something went wrong while generating the answer.')
@@ -94,13 +96,19 @@ export default function App() {
     if(!activeChat || busy)return
     if(!signedIn && guestReplies>=5){setAuthOpen(true);return}
     const withoutAssistant=[...activeChat.messages]; if(withoutAssistant.at(-1)?.role==='assistant')withoutAssistant.pop()
-    updateChat({...activeChat,messages:withoutAssistant,updatedAt:Date.now()}); setBusy(true); setError('')
+    const assistantId=uid()
+    const chatId=activeChat.id
+    updateChat({...activeChat,messages:[...withoutAssistant,{id:assistantId,role:'assistant',content:'',createdAt:Date.now()}],updatedAt:Date.now()}); setBusy(true); setError('')
     try {
       const contents=[{role:'user',parts:[{text:`[RafaAi behavior instructions — follow internally]\n${RAFAAI_IDENTITY}`}]},...withoutAssistant.map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}, ...(m.role==='user' && m.imageDataUrl ? [{inline_data: dataUrlToInlineData(m.imageDataUrl)}] : [])]}))]
-      const payload=await generateAnswer({contents,guest:!signedIn,guestQuestionNumber:!signedIn?guestReplies+1:undefined,classLevel:profile?.class_level||undefined,mode})
-      updateChat({...activeChat,messages:[...withoutAssistant,{id:uid(),role:'assistant',content:extractText(payload),createdAt:Date.now()}],updatedAt:Date.now()})
+      await generateAnswer({contents,guest:!signedIn,guestQuestionNumber:!signedIn?guestReplies+1:undefined,classLevel:profile?.class_level||undefined,mode},(delta)=>{
+        setChats(prev=>prev.map(c=>c.id===chatId?{...c,messages:c.messages.map(m=>m.id===assistantId?{...m,content:m.content+delta}:m),updatedAt:Date.now()}:c))
+      })
       if(!signedIn){const next=storage.incrementGuestReplies();setGuestReplies(next)}
-    }catch(err:any){setError(err?.message||'Could not regenerate the answer.')}finally{setBusy(false)}
+    }catch(err:any){
+      setChats(prev=>prev.map(c=>c.id===chatId?{...c,messages:c.messages.filter(m=>m.id!==assistantId),updatedAt:Date.now()}:c))
+      setError(err?.message||'Could not regenerate the answer.')
+    }finally{setBusy(false)}
   }
 
   function stop(){setError('Generation stopped.');setBusy(false)}
