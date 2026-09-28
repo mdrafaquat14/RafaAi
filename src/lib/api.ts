@@ -41,7 +41,7 @@ export async function generateAnswer(args: GenerateArgs, onDelta?: (text: string
 
   const consume = (chunk: string) => {
     buffer += chunk
-    const lines = buffer.split(/\\r?\\n/)
+    const lines = buffer.split(/\r?\n/)
     buffer = lines.pop() || ''
     for (const line of lines) {
       const trimmed = line.trim()
