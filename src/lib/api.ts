@@ -10,32 +10,63 @@ export interface GenerateArgs {
   mode?: string
 }
 
-export async function generateAnswer(args: GenerateArgs) {
+export async function generateAnswer(args: GenerateArgs, onDelta?: (text: string) => void) {
   if (!supabase) throw new Error('Supabase is not configured yet. Add the VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY environment variables.')
 
   const { data: sessionData } = await supabase.auth.getSession()
   const token = sessionData.session?.access_token
   const baseUrl = (import.meta.env.VITE_SUPABASE_URL as string | undefined) || 'https://kpcltwcxidmzwsdjidlx.supabase.co'
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  }
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
   if (token) headers.Authorization = `Bearer ${token}`
 
   const response = await fetch(`${baseUrl}/functions/v1/${functionName}`, {
     method: 'POST',
     headers,
-    body: JSON.stringify(args),
+    body: JSON.stringify({ ...args, stream: true }),
   })
 
-  const body = await response.json().catch(() => ({}))
   if (!response.ok) {
+    const body = await response.json().catch(() => ({}))
     const message = body?.error || body?.message || `Request failed (${response.status})`
     const error = new Error(message) as Error & { status?: number }
     error.status = response.status
     throw error
   }
 
-  return body
+  if (!response.body) throw new Error('AI stream was unavailable.')
+  const reader = response.body.getReader()
+  const decoder = new TextDecoder()
+  let buffer = ''
+  let fullText = ''
+
+  const consume = (chunk: string) => {
+    buffer += chunk
+    const lines = buffer.split(/\\r?\\n/)
+    buffer = lines.pop() || ''
+    for (const line of lines) {
+      const trimmed = line.trim()
+      if (!trimmed.startsWith('data:')) continue
+      const raw = trimmed.slice(5).trim()
+      if (!raw || raw === '[DONE]') continue
+      try {
+        const parsed = JSON.parse(raw)
+        const delta = parsed?.candidates?.[0]?.content?.parts?.map((p: any) => p?.text || '').join('') || ''
+        if (delta) {
+          fullText += delta
+          onDelta?.(delta)
+        }
+      } catch {}
+    }
+  }
+
+  while (true) {
+    const { value, done } = await reader.read()
+    if (done) break
+    consume(decoder.decode(value, { stream: true }))
+  }
+  consume(decoder.decode())
+  if (!fullText) throw new Error('AI returned an empty response.')
+  return { text: fullText }
 }
 
 export function extractText(payload: any): string {
