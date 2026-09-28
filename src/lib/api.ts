@@ -15,7 +15,7 @@ export async function generateAnswer(args: GenerateArgs) {
 
   const { data: sessionData } = await supabase.auth.getSession()
   const token = sessionData.session?.access_token
-  const baseUrl = import.meta.env.VITE_SUPABASE_URL as string
+  const baseUrl = (import.meta.env.VITE_SUPABASE_URL as string | undefined) || 'https://kpcltwcxidmzwsdjidlx.supabase.co'
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   }
