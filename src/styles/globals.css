@@ -25,21 +25,22 @@
 .topbar-title{font-size:13px}
 .sidebar-backdrop{display:none}
 
-/* Messages: student on the left, RafaAi on the right. No user avatar/"U". */
+/* Messages: student on the right, RafaAi on the left. No user avatar/"U". */
 .messages-container{width:min(980px,100%);padding-left:28px;padding-right:28px}
 .message{width:100%;display:flex;margin-bottom:30px;gap:0}
 .message-body{max-width:min(78%,760px);flex:0 1 auto}
-.user-message{justify-content:flex-start}
-.user-message .message-body{margin-right:auto}
-.ai-message{justify-content:flex-end}
-.ai-message .message-body{margin-left:auto}
-.message-label{font-size:11px;letter-spacing:.02em;margin:0 0 6px;color:var(--faint);font-weight:700;text-align:right}
-.user-message .message-text{background:transparent;border:0;padding:0;border-radius:0;font-size:15px;line-height:1.7}
-.ai-message .message-text{background:var(--panel2);border:1px solid var(--line);padding:12px 15px;border-radius:16px 16px 5px 16px;line-height:1.72}
+.user-message{justify-content:flex-end}
+.user-message .message-body{margin-left:auto}
+.ai-message{justify-content:flex-start}
+.ai-message .message-body{margin-right:auto}
+.message-label{font-size:11px;letter-spacing:.02em;margin:0 0 6px;color:var(--faint);font-weight:700}
+.user-message .message-label{text-align:right}
+.user-message .message-text{background:var(--panel2);border:1px solid var(--line);padding:12px 15px;border-radius:16px 16px 5px 16px;font-size:15px;line-height:1.7}
+.ai-message .message-text{background:transparent;border:0;padding:0;border-radius:0;line-height:1.72}
 .user-message .message-attachment{margin-top:2px}
-.ai-message .message-actions{justify-content:flex-end}
+.user-message .message-actions{justify-content:flex-end}
 .message-actions{margin-top:8px}
-.thinking-row{justify-content:flex-end;margin:5px 0 25px auto;width:min(78%,760px)}
+.thinking-row{justify-content:flex-start;margin:5px 0 25px 0;width:min(78%,760px)}
 .thinking-row>div:last-child{font-size:11px}
 
 /* Cleaner welcome area */
