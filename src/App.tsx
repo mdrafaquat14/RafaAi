@@ -125,8 +125,8 @@ export default function App() {
     if(!signedIn && guestReplies>=5){setAuthOpen(true);return}
     setError('')
     const chat=ensureChat(clean)
-    const imageDataUrl = attachment && attachment.type.startsWith('image/') ? await fileToDataUrl(attachment) : undefined
-    const userMsg:ChatMessage={id:uid(),role:'user',content:clean,createdAt:Date.now(),attachmentName:attachment?.name,imageDataUrl}
+    const attachmentDataUrl = attachment ? await fileToDataUrl(attachment) : undefined
+    const userMsg:ChatMessage={id:uid(),role:'user',content:clean,createdAt:Date.now(),attachmentName:attachment?.name,attachmentDataUrl,attachmentMimeType:attachment?.type||undefined,imageDataUrl:attachment?.type.startsWith('image/')?attachmentDataUrl:undefined}
     const nextMessages=[...chat.messages,userMsg]
     const assistantId=uid()
     const withPlaceholder=[...nextMessages,{id:assistantId,role:'assistant' as const,content:'',createdAt:Date.now()}]
