@@ -53,6 +53,25 @@ export default function App() {
     }
   },[])
   useEffect(()=>{ document.documentElement.dataset.theme=theme; storage.saveTheme(theme) },[theme])
+
+  // Open an existing chat at the exact point where the student last left it: the latest messages.
+  // While a new answer is streaming, keep the view at the bottom so the latest text stays visible.
+  useEffect(()=>{
+    const scrollToLatest=()=>{
+      const el=document.querySelector<HTMLElement>('.chat-scroll')
+      if(!el) return
+      el.scrollTop=el.scrollHeight
+    }
+    const frame=requestAnimationFrame(scrollToLatest)
+    return ()=>cancelAnimationFrame(frame)
+  },[activeId])
+
+  useEffect(()=>{
+    if(!busy) return
+    const el=document.querySelector<HTMLElement>('.chat-scroll')
+    if(!el) return
+    el.scrollTop=el.scrollHeight
+  },[activeChat?.messages.length,busy])
   useEffect(()=>{ storage.saveChats(chats) },[chats])
   useEffect(()=>{
     const onKey=(event:KeyboardEvent)=>{ if(event.key==='Escape'){setSidebarOpen(false);setSidebarCollapsed(true)} }
