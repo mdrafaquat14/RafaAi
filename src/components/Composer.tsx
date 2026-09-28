@@ -8,7 +8,8 @@ export function Composer({value,onChange,onSend,busy,mode,setMode,attachment,set
   const fileRef=useRef<HTMLInputElement>(null)
   const [toolsOpen,setToolsOpen]=useState(false)
   const [search,setSearch]=useState(false)
-  function handleKey(e:React.KeyboardEvent<HTMLTextAreaElement>){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();if(!busy)onSend()}}\n  function chooseFile(file:File|null){if(!file)return;if(file.size>4*1024*1024){window.alert('Please choose a file smaller than 4 MB.');return}setAttachment(file)}
+  function handleKey(e:React.KeyboardEvent<HTMLTextAreaElement>){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();if(!busy)onSend()}}
+  function chooseFile(file:File|null){if(!file)return;if(file.size>4*1024*1024){window.alert('Please choose a file smaller than 4 MB.');return}setAttachment(file)}
   return <div className={`composer ${compact?'composer-compact':''} ${busy?'is-busy':''}`}>
     {attachment&&<div className="attachment-preview">{attachment.type.startsWith('image/')?<ImageIcon size={16}/>:<Paperclip size={16}/>}<span>{attachment.name}</span><button onClick={()=>setAttachment(null)} disabled={busy}><X size={15}/></button></div>}
     <div className="composer-main">
