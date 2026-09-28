@@ -80,14 +80,15 @@ export default function App() {
     try {
       if(!isSupabaseConfigured) throw new Error('RafaAi backend is not connected yet. Add the Supabase environment variables from .env.example.')
       const contents=[{role:'user',parts:[{text:`[RafaAi behavior instructions — follow internally]\n${RAFAAI_IDENTITY}`}]},...nextMessages.map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}, ...(m.role==='user' && m.imageDataUrl ? [{inline_data: dataUrlToInlineData(m.imageDataUrl)}] : [])]}))]
-      await generateAnswer({contents,guest:!signedIn,guestQuestionNumber:!signedIn?guestReplies+1:undefined,classLevel:profile?.class_level||undefined,mode},(delta)=>{
+      await generateAnswer({contents,guest:!signedIn,guestQuestionNumber:!signedIn?guestReplies+1:undefined,guestId:!signedIn?storage.guestId():undefined,classLevel:profile?.class_level||undefined,mode},(delta)=>{
         setChats(prev=>prev.map(c=>c.id===chat.id?{...c,messages:c.messages.map(m=>m.id===assistantId?{...m,content:m.content+delta}:m),updatedAt:Date.now()}:c))
       })
-      if(!signedIn){const next=storage.incrementGuestReplies();setGuestReplies(next)}
+      if(!signedIn){const next=storage.incrementGuestReplies();setGuestReplies(next);if(next>=5)setAuthOpen(true)}
     } catch(err:any) {
       setChats(prev=>prev.map(c=>c.id===chat.id?{...c,messages:c.messages.filter(m=>m.id!==assistantId),updatedAt:Date.now()}:c))
       if(err?.status===401){setAuthOpen(true);setError('Please log in to continue.');return}
-      if(err?.status===403){setError('This account is currently restricted from using RafaAi.');return}
+      if(err?.code==='GUEST_LIMIT_REACHED'){setGuestReplies(5);setAuthOpen(true);setError('Your 5 free guest replies are finished. Create an account to continue.');return}
+      if(err?.code==='ACCOUNT_RESTRICTED'){setError('This account is currently restricted from using RafaAi.');return}
       setError(err?.message||'Something went wrong while generating the answer.')
     } finally { setBusy(false) }
   }
@@ -101,10 +102,10 @@ export default function App() {
     updateChat({...activeChat,messages:[...withoutAssistant,{id:assistantId,role:'assistant',content:'',createdAt:Date.now()}],updatedAt:Date.now()}); setBusy(true); setError('')
     try {
       const contents=[{role:'user',parts:[{text:`[RafaAi behavior instructions — follow internally]\n${RAFAAI_IDENTITY}`}]},...withoutAssistant.map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}, ...(m.role==='user' && m.imageDataUrl ? [{inline_data: dataUrlToInlineData(m.imageDataUrl)}] : [])]}))]
-      await generateAnswer({contents,guest:!signedIn,guestQuestionNumber:!signedIn?guestReplies+1:undefined,classLevel:profile?.class_level||undefined,mode},(delta)=>{
+      await generateAnswer({contents,guest:!signedIn,guestQuestionNumber:!signedIn?guestReplies+1:undefined,guestId:!signedIn?storage.guestId():undefined,classLevel:profile?.class_level||undefined,mode},(delta)=>{
         setChats(prev=>prev.map(c=>c.id===chatId?{...c,messages:c.messages.map(m=>m.id===assistantId?{...m,content:m.content+delta}:m),updatedAt:Date.now()}:c))
       })
-      if(!signedIn){const next=storage.incrementGuestReplies();setGuestReplies(next)}
+      if(!signedIn){const next=storage.incrementGuestReplies();setGuestReplies(next);if(next>=5)setAuthOpen(true)}
     }catch(err:any){
       setChats(prev=>prev.map(c=>c.id===chatId?{...c,messages:c.messages.filter(m=>m.id!==assistantId),updatedAt:Date.now()}:c))
       setError(err?.message||'Could not regenerate the answer.')
