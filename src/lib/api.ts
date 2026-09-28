@@ -69,7 +69,7 @@ export async function generateAnswer(args: GenerateArgs, onDelta?: (text: string
   }
   consume(decoder.decode())
   if (!fullText) throw new Error('AI returned an empty response.')
-  return { text: fullText }
+  return { text: fullText, creditStatus: { remaining: response.headers.get('X-RafaAi-Credits-Remaining'), limit: response.headers.get('X-RafaAi-Daily-Limit'), resetAt: response.headers.get('X-RafaAi-Credits-Reset-At') } }
 }
 
 export function extractText(payload: any): string {
