@@ -1,6 +1,12 @@
 import { useState } from 'react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
+import 'katex/dist/katex.min.css'
 import type { ChatMessage } from '../types'
 import { Copy, Refresh, ThumbsDown, ThumbsUp } from './Icons'
+
 export function Message({message,onRegenerate,onFeedback}:{message:ChatMessage;onRegenerate?:()=>void;onFeedback:(v:boolean)=>void}){
  const [copied,setCopied]=useState(false)
  async function copy(){try{await navigator.clipboard.writeText(message.content);setCopied(true);setTimeout(()=>setCopied(false),1300)}catch{}}
@@ -8,7 +14,20 @@ export function Message({message,onRegenerate,onFeedback}:{message:ChatMessage;o
  return <article className={`message ${isAi?'ai-message':'user-message'}`}>
    <div className="message-body">
      {message.attachmentName&&<div className="message-attachment">{message.attachmentName}</div>}
-     <div className="message-text">{message.content.split('\n').map((line,i)=><span key={i}>{line}{i<message.content.split('\n').length-1&&<br/>}</span>)}</div>
+     <div className="message-text">
+       {isAi ? (
+         <ReactMarkdown
+           remarkPlugins={[remarkGfm,remarkMath]}
+           rehypePlugins={[rehypeKatex]}
+           components={{
+             a:({children,...props})=><a {...props} target="_blank" rel="noreferrer">{children}</a>,
+             table:({children})=><div className="markdown-table-wrap"><table>{children}</table></div>,
+           }}
+         >{message.content}</ReactMarkdown>
+       ) : (
+         message.content.split('\n').map((line,i)=><span key={i}>{line}{i<message.content.split('\n').length-1&&<br/>}</span>)
+       )}
+     </div>
      {isAi&&<div className="message-actions">
        <button onClick={copy} title="Copy"><Copy size={15}/>{copied&&<span>Copied</span>}</button>
        {onRegenerate&&<button onClick={onRegenerate} title="Regenerate"><Refresh size={15}/></button>}
