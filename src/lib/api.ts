@@ -6,6 +6,7 @@ export interface GenerateArgs {
   contents: unknown[]
   guest: boolean
   guestQuestionNumber?: number
+  guestId?: string
   classLevel?: string
   mode?: string
 }
@@ -28,8 +29,9 @@ export async function generateAnswer(args: GenerateArgs, onDelta?: (text: string
   if (!response.ok) {
     const body = await response.json().catch(() => ({}))
     const message = body?.error || body?.message || `Request failed (${response.status})`
-    const error = new Error(message) as Error & { status?: number }
+    const error = new Error(message) as Error & { status?: number; code?: string }
     error.status = response.status
+    error.code = body?.code
     throw error
   }
 
