@@ -11,7 +11,7 @@ interface Props {onClose:()=>void;theme:Theme;setTheme:(t:Theme)=>void;onChatsCl
 
 export function SettingsModal({onClose,theme,setTheme,onChatsCleared,userName,classLevel,email,onLogout,onProfileUpdated}:Props){
  const [tab,setTab]=useState<Tab>('user'),[language,setLanguage]=useState<Language>(storage.language()),[style,setStyle]=useState<ResponseStyle>(storage.responseStyle())
- const [name,setName]=useState(userName||''),[studentClass,setStudentClass]=useState(classLevel||''),[password,setPassword]=useState(''),[saved,setSaved]=useState(false),[accountError,setAccountError]=useState(''),[accountBusy,setAccountBusy]=useState(false),[logoutOpen,setLogoutOpen]=useState(false)
+ const [name,setName]=useState(userName||''),[studentClass,setStudentClass]=useState(classLevel||''),[oldPassword,setOldPassword]=useState(''),[password,setPassword]=useState(''),[saved,setSaved]=useState(false),[accountError,setAccountError]=useState(''),[accountBusy,setAccountBusy]=useState(false),[logoutOpen,setLogoutOpen]=useState(false)
  async function savePreferences(){storage.saveLanguage(language);storage.saveResponseStyle(style);setSaved(true);setTimeout(()=>setSaved(false),1200)}
  async function saveAccount(){
    if(!supabase||!email)return
@@ -19,9 +19,16 @@ export function SettingsModal({onClose,theme,setTheme,onChatsCleared,userName,cl
    try{
      const {data,error}=await supabase.functions.invoke('rafaai-account',{body:{fullName:name.trim(),classLevel:studentClass.trim()}})
      if(error)throw error
-     if(password.trim()){if(!oldPassword)throw new Error('Enter your old password first.');if(password.length<6)throw new Error('New password must be at least 6 characters.');const {error:verifyError}=await supabase.auth.signInWithPassword({email,password:oldPassword});if(verifyError)throw new Error('Old password is incorrect. Use Forgot password on the login page if you cannot verify it.');const {error:pe}=await supabase.auth.updateUser({password});if(pe)throw pe}
+     if(password.trim()){
+       if(!oldPassword)throw new Error('Enter your old password first.')
+       if(password.length<6)throw new Error('New password must be at least 6 characters.')
+       const {error:verifyError}=await supabase.auth.signInWithPassword({email,password:oldPassword})
+       if(verifyError)throw new Error('Old password is incorrect. Use Forgot password on the login page if you cannot verify it.')
+       const {error:pe}=await supabase.auth.updateUser({password})
+       if(pe)throw pe
+     }
      const nextName=String(data?.profile?.full_name||name.trim()),nextClass=String(data?.profile?.class_level||studentClass.trim())
-     setName(nextName);setStudentClass(nextClass);setPassword('');onProfileUpdated(nextName,nextClass);setSaved(true);setTimeout(()=>setSaved(false),1200)
+     setName(nextName);setStudentClass(nextClass);setOldPassword('');setPassword('');onProfileUpdated(nextName,nextClass);setSaved(true);setTimeout(()=>setSaved(false),1200)
    }catch(err:any){setAccountError(err?.message||'Could not update your account.')}finally{setAccountBusy(false)}
  }
  function confirmLogout(){setLogoutOpen(false);onClose();onLogout()}
