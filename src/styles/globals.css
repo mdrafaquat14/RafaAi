@@ -299,3 +299,13 @@
  .ai-message .message-text h3{font-size:17px}
  .ai-message .message-text table{font-size:13px}
 }
+
+/* File drag-and-drop + attachment menu UX */
+.composer{position:relative}
+.composer.is-dragging{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 18%,transparent)}
+.drop-overlay{position:absolute;inset:0;z-index:20;border-radius:inherit;background:color-mix(in srgb,var(--panel) 92%,transparent);backdrop-filter:blur(5px);display:grid;place-items:center;pointer-events:none}
+.drop-overlay>div{display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--accent);text-align:center}
+.drop-overlay b{font-size:14px;color:var(--text)}
+.drop-overlay span{font-size:11px;color:var(--muted)}
+.tool-popover{z-index:30}
+@media(max-width:600px){.drop-overlay{border-radius:15px}.drop-overlay span{font-size:10px}}
