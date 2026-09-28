@@ -9,7 +9,7 @@ const modes:{label:string;mode:PromptMode;icon:React.ReactNode;prompt:string}[]=
 ]
 export function Welcome({onPrompt,composer}:{onPrompt:(text:string,mode:PromptMode)=>void;composer:React.ReactNode}){
  return <section className="welcome"><div className="welcome-inner">
-   <div className="welcome-mark"><img src="/favicon.svg" alt="" /></div>
+   <div className="welcome-mark"><img src="/rafaai-logo.svg" alt="" /></div>
    <div className="eyebrow">STUDENT-FIRST AI ASSISTANT</div>
    <h1>What are you doing today?</h1>
    <p className="welcome-subtitle">Ask a doubt, solve a question, learn a topic, or get help with your next study task.</p>
