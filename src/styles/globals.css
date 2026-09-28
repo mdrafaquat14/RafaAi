@@ -102,3 +102,25 @@
   .settings-actions{grid-template-columns:1fr}
   .secondary-wide{order:2}
 }
+
+
+/* Mobile layout fix */
+@media(max-width:900px){
+  .main-panel{min-height:100dvh}
+  .chat-scroll{min-height:0}
+  .welcome{min-height:calc(100dvh - 62px);height:calc(100dvh - 62px);overflow:auto;display:flex;padding-bottom:22px}
+  .welcome-inner{min-height:100%;justify-content:flex-start}
+  .welcome-composer{margin-top:auto;width:min(760px,100%)}
+  .quick-modes{margin-bottom:0}
+  .sidebar-close-mobile{display:grid}
+}
+@media(max-width:600px){
+  .welcome{min-height:calc(100dvh - 62px);height:calc(100dvh - 62px);padding-top:24px;padding-bottom:16px}
+  .welcome-inner{width:100%}
+  .welcome-composer{width:100%}
+  .welcome .composer{width:100%}
+  .quick-modes{margin-top:10px}
+  .welcome-note{margin-top:14px;margin-bottom:2px}
+  .sidebar{width:min(320px,88vw);height:100dvh}
+  .sidebar-close-mobile{width:38px;height:38px;flex:0 0 38px}
+}
