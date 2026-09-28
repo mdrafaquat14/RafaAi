@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { PromptMode } from '../types'
 import { Globe, ImageIcon, Paperclip, Send, Sparkles, X } from './Icons'
 
@@ -6,11 +6,27 @@ interface Props { value:string; onChange:(v:string)=>void; onSend:()=>void; busy
 export function Composer({value,onChange,onSend,busy,mode,setMode,attachment,setAttachment,onStop,compact}:Props) {
   const inputRef=useRef<HTMLTextAreaElement>(null)
   const fileRef=useRef<HTMLInputElement>(null)
+  const composerRef=useRef<HTMLDivElement>(null)
+  const [dragging,setDragging]=useState(false)
   const [toolsOpen,setToolsOpen]=useState(false)
   const [search,setSearch]=useState(false)
   function handleKey(e:React.KeyboardEvent<HTMLTextAreaElement>){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();if(!busy)onSend()}}
-  function chooseFile(file:File|null){if(!file)return;if(file.size>4*1024*1024){window.alert('Please choose a file smaller than 4 MB.');return}setAttachment(file)}
-  return <div className={`composer ${compact?'composer-compact':''} ${busy?'is-busy':''}`}>
+  function chooseFile(file:File|null){if(!file)return;if(file.size>4*1024*1024){window.alert('Please choose a file smaller than 4 MB.');return}setAttachment(file);setToolsOpen(false);setDragging(false)}
+  useEffect(()=>{
+    if(!toolsOpen) return
+    const onPointerDown=(event:PointerEvent)=>{
+      const target=event.target as Node|null
+      if(target && composerRef.current?.contains(target)) return
+      setToolsOpen(false)
+    }
+    document.addEventListener('pointerdown',onPointerDown)
+    return ()=>document.removeEventListener('pointerdown',onPointerDown)
+  },[toolsOpen])
+  function handleDragOver(e:React.DragEvent<HTMLDivElement>){e.preventDefault();if(!busy)setDragging(true)}
+  function handleDragLeave(e:React.DragEvent<HTMLDivElement>){if(!e.currentTarget.contains(e.relatedTarget as Node|null))setDragging(false)}
+  function handleDrop(e:React.DragEvent<HTMLDivElement>){e.preventDefault();if(busy)return;chooseFile(e.dataTransfer.files?.[0]||null)}
+  return <div ref={composerRef} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} className={`composer ${compact?'composer-compact':''} ${busy?'is-busy':''} ${dragging?'is-dragging':''}`}>
+    {dragging&&<div className="drop-overlay"><div><Paperclip size={22}/><b>Drop file here</b><span>Images, PDF or supported documents · max 4 MB</span></div></div>}
     {attachment&&<div className="attachment-preview">{attachment.type.startsWith('image/')?<ImageIcon size={16}/>:<Paperclip size={16}/>}<span>{attachment.name}</span><button onClick={()=>setAttachment(null)} disabled={busy}><X size={15}/></button></div>}
     <div className="composer-main">
       <button className={`composer-tool ${toolsOpen?'selected':''}`} onClick={()=>setToolsOpen(!toolsOpen)} disabled={busy} aria-label="Add attachment"><Paperclip/></button>
