@@ -7,7 +7,6 @@ export function Message({message,onRegenerate,onFeedback}:{message:ChatMessage;o
  const isAi=message.role==='assistant'
  return <article className={`message ${isAi?'ai-message':'user-message'}`}>
    <div className="message-body">
-     {isAi&&<div className="message-label">RafaAi</div>}
      {message.attachmentName&&<div className="message-attachment">{message.attachmentName}</div>}
      <div className="message-text">{message.content.split('\n').map((line,i)=><span key={i}>{line}{i<message.content.split('\n').length-1&&<br/>}</span>)}</div>
      {isAi&&<div className="message-actions">
