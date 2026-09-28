@@ -124,6 +124,19 @@ export default function App() {
     }catch{}
   }
   useEffect(()=>{if(user) refreshCredits()},[user?.id])
+  // Keep the limit screen in sync with admin approvals/credit changes without requiring a reload.
+  useEffect(()=>{
+    if(!user || !creditLimitReached) return
+    const refresh=()=>{ refreshCredits() }
+    const timer=window.setInterval(refresh,5000)
+    window.addEventListener('focus',refresh)
+    document.addEventListener('visibilitychange',refresh)
+    return ()=>{
+      window.clearInterval(timer)
+      window.removeEventListener('focus',refresh)
+      document.removeEventListener('visibilitychange',refresh)
+    }
+  },[user?.id,creditLimitReached])
   async function requestMoreAccess(message:string,requestedCredits:number|null){
     if(!supabase) return
     const {error}=await supabase.functions.invoke('rafaai-account',{body:{action:'request_more_access',message,requestedCredits}})
@@ -239,7 +252,7 @@ export default function App() {
         />
         <div className="chat-scroll">
           {!activeChat ? (
-            <Welcome onPrompt={prompt} composer={composerArea} />
+            <Welcome onPrompt={prompt} />
           ) : (
             <div className="messages-container">
               {activeChat.messages.map((m, i) => {
