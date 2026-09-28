@@ -10,6 +10,8 @@ import { Composer } from './components/Composer'
 import { Message } from './components/Message'
 import { AuthModal } from './components/AuthModal'
 import { SettingsModal } from './components/SettingsModal'
+import { CreditLimit, type CreditStatus } from './components/CreditLimit'
+import { AdminModal } from './components/AdminModal'
 
 const uid = () => `${Date.now()}-${Math.random().toString(36).slice(2,9)}`
 const RAFAAI_IDENTITY = 'You are RafaAi, a student-first AI assistant created for learners. Your public assistant name is RafaAi. If asked your name, say RafaAi. If asked who founded RafaAi, say Md Rafaquat. Never claim to be Gemini or present the underlying model provider as your own identity. Be friendly, clear, intelligent, and natural. Support English, Hindi, and Hinglish. IMPORTANT FOR CLASS 10 STUDENTS: default to very simple, textbook-style Hindi when the student asks in Hindi/Hinglish. Use English terms only when they are standard syllabus terms, and explain each such term in simple Hindi the first time. Do not fill an answer with unnecessary English labels. Teach concept first, then a small easy example, then formula, then step-by-step solving when requested. Follow every part of the student request. If the student asks for a complete explanation, finish every requested section before stopping. Never intentionally truncate a response, leave a section unfinished, or end mid-sentence. Prefer concise but complete answers over formula dumps. For formulas, use Markdown math syntax: $x$ for inline math and $$...$$ for displayed equations; never leave raw LaTeX delimiters or formula code visible. Use clear headings and bullet points when helpful.'
@@ -30,6 +32,9 @@ export default function App() {
   const [attachment,setAttachment] = useState<File|null>(null)
   const [error,setError] = useState('')
   const [guestReplies,setGuestReplies] = useState(storage.guestReplies())
+  const [creditStatus,setCreditStatus] = useState<CreditStatus|null>(null)
+  const [creditLimitReached,setCreditLimitReached] = useState(false)
+  const [adminOpen,setAdminOpen] = useState(false)
 
   const activeChat = useMemo(()=>chats.find(c=>c.id===activeId)||null,[chats,activeId])
   const signedIn = Boolean(user)
@@ -158,7 +163,6 @@ export default function App() {
         setChats(prev=>prev.map(c=>c.id===chat.id?{...c,messages:c.messages.map(m=>m.id===assistantId?{...m,content:m.content+delta}:m),updatedAt:Date.now()}:c))
       })
       if(result?.creditStatus){const remaining=result.creditStatus.remaining==='unlimited'?null:Number(result.creditStatus.remaining);setCreditStatus(prev=>({...prev,ready:true,remaining,limit:result.creditStatus.limit==='unlimited'?null:Number(result.creditStatus.limit),reset_at:result.creditStatus.resetAt||prev?.reset_at||null}));setCreditLimitReached(remaining===0)}
-      if(result?.creditStatus){const remaining=result.creditStatus.remaining==='unlimited'?null:Number(result.creditStatus.remaining);setCreditStatus(prev=>({...prev,ready:true,remaining,limit:result.creditStatus.limit==='unlimited'?null:Number(result.creditStatus.limit),reset_at:result.creditStatus.resetAt||prev?.reset_at||null}));setCreditLimitReached(remaining===0)}
       if(!signedIn){const next=storage.incrementGuestReplies();setGuestReplies(next);if(next>=5)setAuthOpen(true)}
     } catch(err:any) {
       setChats(prev=>prev.map(c=>c.id===chat.id?{...c,messages:c.messages.filter(m=>m.id!==assistantId),updatedAt:Date.now()}:c))
@@ -182,9 +186,11 @@ export default function App() {
       const result = await generateAnswer({contents,guest:!signedIn,guestQuestionNumber:!signedIn?guestReplies+1:undefined,guestId:!signedIn?storage.guestId():undefined,classLevel:profile?.class_level||undefined,mode},(delta)=>{
         setChats(prev=>prev.map(c=>c.id===chatId?{...c,messages:c.messages.map(m=>m.id===assistantId?{...m,content:m.content+delta}:m),updatedAt:Date.now()}:c))
       })
+      if(result?.creditStatus){const remaining=result.creditStatus.remaining==='unlimited'?null:Number(result.creditStatus.remaining);setCreditStatus(prev=>({...prev,ready:true,remaining,limit:result.creditStatus.limit==='unlimited'?null:Number(result.creditStatus.limit),reset_at:result.creditStatus.resetAt||prev?.reset_at||null}));setCreditLimitReached(remaining===0)}
       if(!signedIn){const next=storage.incrementGuestReplies();setGuestReplies(next);if(next>=5)setAuthOpen(true)}
     }catch(err:any){
       setChats(prev=>prev.map(c=>c.id===chatId?{...c,messages:c.messages.filter(m=>m.id!==assistantId),updatedAt:Date.now()}:c))
+      if(err?.code==='DAILY_CREDIT_LIMIT'){setCreditStatus({ready:true,unlimited:false,remaining:0,limit:Number(err?.details?.dailyCreditLimit||20),reset_at:err?.details?.resetAt||null});setCreditLimitReached(true);setError('');return}
       setError(err?.message||'Could not regenerate the answer.')
     }finally{setBusy(false)}
   }
