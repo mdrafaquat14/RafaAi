@@ -268,12 +268,6 @@ export default function App() {
           )}
         </div>
         <div className="composer-area">{composerArea}</div>
-                </div>
-                {composer}
-              </>
-            )}
-          </div>
-        )}
       </main>
       {authOpen && <AuthModal onClose={() => setAuthOpen(false)} />}
       {adminOpen && <AdminModal onClose={() => setAdminOpen(false)} />}
