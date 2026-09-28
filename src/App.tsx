@@ -96,13 +96,13 @@ export default function App() {
     supabase.auth.getSession().then(async ({data})=>{
       const session=data.session
       setUser(session?.user?{id:session.user.id,email:session.user.email}:null)
-      if(session?.user) setProfile(await getProfile(session.user.id).catch(()=>null))
+      if(session?.user) { setProfile(await getProfile(session.user.id).catch(()=>null)); setTimeout(refreshCredits,0) }
     })
     const {data:listener}=supabase.auth.onAuthStateChange(async (event,session)=>{
       if(event==='PASSWORD_RECOVERY') setAuthOpen(true)
       setUser(session?.user?{id:session.user.id,email:session.user.email}:null)
-      if(session?.user) setProfile(await getProfile(session.user.id).catch(()=>null))
-      else setProfile(null)
+      if(session?.user) { setProfile(await getProfile(session.user.id).catch(()=>null)); setTimeout(refreshCredits,0) }
+      else { setProfile(null); setCreditStatus(null); setCreditLimitReached(false) }
     })
     return ()=>listener.subscription.unsubscribe()
   },[])
@@ -174,13 +174,13 @@ export default function App() {
 
   return <div className="app-shell">
     {sidebarOpen&&<button className="sidebar-backdrop" aria-label="Close menu" onClick={()=>setSidebarOpen(false)}/>}
-    <Sidebar open={sidebarOpen} collapsed={sidebarCollapsed} chats={chats} activeId={activeId} onClose={()=>setSidebarOpen(false)} onCollapse={()=>setSidebarCollapsed(v=>!v)} onNew={newChat} onSelect={selectChat} onDelete={deleteChat} onRename={renameChat} onLogin={()=>setAuthOpen(true)} onSettings={()=>setSettingsOpen(true)} userName={profile?.full_name||user?.email?.split('@')[0]||null} onLogout={signOut}/>
+    <Sidebar onAdmin={()=>setAdminOpen(true)} isAdmin={profile?.role==='admin'} open={sidebarOpen} collapsed={sidebarCollapsed} chats={chats} activeId={activeId} onClose={()=>setSidebarOpen(false)} onCollapse={()=>setSidebarCollapsed(v=>!v)} onNew={newChat} onSelect={selectChat} onDelete={deleteChat} onRename={renameChat} onLogin={()=>setAuthOpen(true)} onSettings={()=>setSettingsOpen(true)} userName={profile?.full_name||user?.email?.split('@')[0]||null} onLogout={signOut}/>
     <main className="main-panel">
       <TopBar onMenu={()=>setSidebarOpen(v=>!v)} onLogin={()=>setAuthOpen(true)} onSettings={()=>setSettingsOpen(true)} signedIn={signedIn} userName={profile?.full_name||user?.email?.split('@')[0]||null}/>
       <div className="chat-scroll">
         {!activeChat ? <Welcome onPrompt={prompt} composer={composer}/> : <div className="messages-container">{activeChat.messages.map((m,i)=>{const isWaiting=m.role==='assistant'&&m.content===''&&busy; return isWaiting ? <div key={m.id} className="thinking-row"><div className="thinking-mark"><span/><span/><span/></div><div>RafaAi is thinking…</div></div> : <Message key={m.id} message={m} onRegenerate={m.role==='assistant'&&i===activeChat.messages.length-1?regenerate:undefined} onFeedback={v=>feedback(m.id,v)}/>})}{error&&<div className="inline-error"><span>{error}</span><button onClick={()=>setError('')}>Dismiss</button></div>}</div>}
       </div>
-      {activeChat&&<div className="composer-area"><div className="guest-meter">{!signedIn?<><span>{guestReplies<5?`${5-guestReplies} guest repl${5-guestReplies===1?'y':'ies'} remaining`:'Guest limit reached'}</span><button onClick={()=>setAuthOpen(true)}>{guestReplies>=5?'Log in':'Create account'}</button></>:<span>Signed in · no RafaAi-side message limit</span>}</div>{composer}</div>}
+      {activeChat&&<div className="composer-area">{creditLimitReached?<CreditLimit status={creditStatus} onRequest={requestMoreAccess}/>:<><div className="guest-meter">{!signedIn?<><span>{guestReplies<5?String(5-guestReplies)+" guest replies remaining":"Guest limit reached"}</span><button onClick={()=>setAuthOpen(true)}>{guestReplies>=5?"Log in":"Create account"}</button></>:<span>{creditStatus?.unlimited?"Unlimited AI access":creditStatus?.remaining!=null?String(creditStatus.remaining)+" / "+String(creditStatus.limit??20)+" AI credits remaining":"AI credits active"}</span>}</div>{composer}</>}</div>
     </main>
     {authOpen&&<AuthModal onClose={()=>setAuthOpen(false)}/>} 
     {settingsOpen&&<SettingsModal onClose={()=>setSettingsOpen(false)} theme={theme} setTheme={setTheme} onChatsCleared={()=>{setChats([]);setActiveId(null);setSettingsOpen(false)}} userName={profile?.full_name||user?.email?.split('@')[0]||null} classLevel={profile?.class_level||null} email={user?.email||null} onProfileUpdated={(name,classLevel)=>setProfile(prev=>prev?{...prev,full_name:name,class_level:classLevel}:prev)} onLogout={signOut}/>}
