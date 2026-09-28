@@ -183,6 +183,7 @@ export default function App() {
       {activeChat&&<div className="composer-area">{creditLimitReached?<CreditLimit status={creditStatus} onRequest={requestMoreAccess}/>:<><div className="guest-meter">{!signedIn?<><span>{guestReplies<5?String(5-guestReplies)+" guest replies remaining":"Guest limit reached"}</span><button onClick={()=>setAuthOpen(true)}>{guestReplies>=5?"Log in":"Create account"}</button></>:<span>{creditStatus?.unlimited?"Unlimited AI access":creditStatus?.remaining!=null?String(creditStatus.remaining)+" / "+String(creditStatus.limit??20)+" AI credits remaining":"AI credits active"}</span>}</div>{composer}</>}</div>
     </main>
     {authOpen&&<AuthModal onClose={()=>setAuthOpen(false)}/>} 
+    {adminOpen&&<AdminModal onClose={()=>setAdminOpen(false)}/>} 
     {settingsOpen&&<SettingsModal onClose={()=>setSettingsOpen(false)} theme={theme} setTheme={setTheme} onChatsCleared={()=>{setChats([]);setActiveId(null);setSettingsOpen(false)}} userName={profile?.full_name||user?.email?.split('@')[0]||null} classLevel={profile?.class_level||null} email={user?.email||null} onProfileUpdated={(name,classLevel)=>setProfile(prev=>prev?{...prev,full_name:name,class_level:classLevel}:prev)} onLogout={signOut}/>}
   </div>
 }
