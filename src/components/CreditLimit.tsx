@@ -1,12 +1,93 @@
 import { useState } from 'react'
 import { MessageSquare, X } from './Icons'
 
-export interface CreditStatus { ready?:boolean; unlimited?:boolean; remaining?:number|null; limit?:number|null; base_limit?:number|null; bonus?:number|null; reset_at?:string|null }
+export interface CreditStatus {
+  ready?: boolean
+  unlimited?: boolean
+  remaining?: number | null
+  limit?: number | null
+  base_limit?: number | null
+  bonus?: number | null
+  reset_at?: string | null
+}
 
-export function CreditLimit({status,onRequest,onClose}:{status:CreditStatus|null;onRequest:(message:string,requestedCredits:number|null)=>Promise<void>;onClose?:()=>void}){
- const [open,setOpen]=useState(false),[message,setMessage]=useState('I need more AI credits for studying.'),[requested,setRequested]=useState('50'),[busy,setBusy]=useState(false),[sent,setSent]=useState(false)
- async function submit(){setBusy(true);try{await onRequest(message,requested?Number(requested):null);setSent(true)}finally{setBusy(false)}}
- const reset=status?.reset_at?new Date(status.reset_at).toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit'}):'12:00 AM'
- if(open) return <div className="credit-modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)setOpen(false}}><div className="credit-request-card"><div className="credit-request-head"><div><div className="eyebrow">RAFAAI ACCESS</div><h3>Request more access</h3></div><button onClick={()=>setOpen(false)}><X/></button></div>{sent?<div className="credit-success"><b>Request sent ✓</b><p>RafaAiAdmin can review your request and increase your access manually.</p><button className="primary-wide" onClick={()=>{setSent(false);setOpen(false)}}>Done</button></div>:<><label>How can we help?<textarea value={message} onChange={e=>setMessage(e.target.value)} rows={4}/></label><label>Requested daily credits <input value={requested} onChange={e=>setRequested(e.target.value)} inputMode="numeric" placeholder="e.g. 50"/></label><button className="primary-wide" disabled={busy||!message.trim()} onClick={submit}>{busy?'Sending…':'Send request'}</button></>}</div></div>
- return <div className="credit-limit-card"><div className="credit-limit-icon">⚡</div><div className="credit-limit-copy"><b>Daily AI limit reached</b><span>Need more access? Contact RafaAiAdmin.</span><span>You’ve used all {status?.limit??20} AI credits for today.</span><small>Your credits reset at <strong>{reset}</strong> (India time).</small></div><button className="credit-contact" onClick={()=>setOpen(true)}><MessageSquare size={15}/> Contact RafaAiAdmin</button>{onClose&&<button className="credit-close" onClick={onClose} aria-label="Close"><X size={15}/></button>}</div>
+interface Props {
+  status: CreditStatus | null
+  onRequest: (message: string, requestedCredits: number | null) => Promise<void>
+  onClose?: () => void
+}
+
+export function CreditLimit({ status, onRequest, onClose }: Props) {
+  const [open, setOpen] = useState(false)
+  const [message, setMessage] = useState('I need more AI credits for studying.')
+  const [requested, setRequested] = useState('50')
+  const [busy, setBusy] = useState(false)
+  const [sent, setSent] = useState(false)
+
+  async function submit() {
+    setBusy(true)
+    try {
+      await onRequest(message, requested ? Number(requested) : null)
+      setSent(true)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const reset = status?.reset_at
+    ? new Date(status.reset_at).toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' })
+    : '12:00 AM'
+
+  if (open) {
+    return (
+      <div className="credit-modal-backdrop" onMouseDown={e => { if (e.target === e.currentTarget) setOpen(false) }}>
+        <div className="credit-request-card">
+          <div className="credit-request-head">
+            <div>
+              <div className="eyebrow">RAFAAI ACCESS</div>
+              <h3>Request more access</h3>
+            </div>
+            <button onClick={() => setOpen(false)} aria-label="Close"><X /></button>
+          </div>
+          {sent ? (
+            <div className="credit-success">
+              <b>Request sent ✓</b>
+              <p>RafaAiAdmin can review your request and increase your access manually.</p>
+              <button className="primary-wide" onClick={() => { setSent(false); setOpen(false) }}>Done</button>
+            </div>
+          ) : (
+            <>
+              <label>
+                How can we help?
+                <textarea value={message} onChange={e => setMessage(e.target.value)} rows={4} />
+              </label>
+              <label>
+                Requested daily credits
+                <input value={requested} onChange={e => setRequested(e.target.value)} inputMode="numeric" placeholder="e.g. 50" />
+              </label>
+              <button className="primary-wide" disabled={busy || !message.trim()} onClick={submit}>
+                {busy ? 'Sending…' : 'Send request'}
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="credit-limit-card">
+      <div className="credit-limit-icon">⚡</div>
+      <div className="credit-limit-copy">
+        <b>Daily AI limit reached</b>
+        <span>Need more access? Contact RafaAiAdmin.</span>
+        <span>You’ve used all {status?.limit ?? 20} AI credits for today.</span>
+        <small>Your credits reset at <strong>{reset}</strong> (India time).</small>
+      </div>
+      <button className="credit-contact" onClick={() => setOpen(true)}>
+        <MessageSquare size={15} /> Contact RafaAiAdmin
+      </button>
+      {onClose && <button className="credit-close" onClick={onClose} aria-label="Close"><X size={15} /></button>}
+    </div>
+  )
 }
