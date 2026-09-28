@@ -34,7 +34,25 @@ export default function App() {
   const activeChat = useMemo(()=>chats.find(c=>c.id===activeId)||null,[chats,activeId])
   const signedIn = Boolean(user)
 
-  useEffect(()=>{\n    const updateViewport=()=>{\n      const vv=window.visualViewport\n      if(!vv) return\n      const keyboardOffset=Math.max(0,window.innerHeight-vv.height-vv.offsetTop)\n      document.documentElement.style.setProperty('--keyboard-offset',\`\${keyboardOffset}px\`)\n      document.documentElement.style.setProperty('--viewport-height',\`\${vv.height}px\`)\n    }\n    updateViewport()\n    window.visualViewport?.addEventListener('resize',updateViewport)\n    window.visualViewport?.addEventListener('scroll',updateViewport)\n    window.addEventListener('resize',updateViewport)\n    return ()=>{\n      window.visualViewport?.removeEventListener('resize',updateViewport)\n      window.visualViewport?.removeEventListener('scroll',updateViewport)\n      window.removeEventListener('resize',updateViewport)\n    }\n  },[])\n  useEffect(()=>{ document.documentElement.dataset.theme=theme; storage.saveTheme(theme) },[theme])
+  useEffect(()=>{
+    const updateViewport=()=>{
+      const vv=window.visualViewport
+      if(!vv) return
+      const keyboardOffset=Math.max(0,window.innerHeight-vv.height-vv.offsetTop)
+      document.documentElement.style.setProperty('--keyboard-offset',`${keyboardOffset}px`)
+      document.documentElement.style.setProperty('--viewport-height',`${vv.height}px`)
+    }
+    updateViewport()
+    window.visualViewport?.addEventListener('resize',updateViewport)
+    window.visualViewport?.addEventListener('scroll',updateViewport)
+    window.addEventListener('resize',updateViewport)
+    return ()=>{
+      window.visualViewport?.removeEventListener('resize',updateViewport)
+      window.visualViewport?.removeEventListener('scroll',updateViewport)
+      window.removeEventListener('resize',updateViewport)
+    }
+  },[])
+  useEffect(()=>{ document.documentElement.dataset.theme=theme; storage.saveTheme(theme) },[theme])
   useEffect(()=>{ storage.saveChats(chats) },[chats])
   useEffect(()=>{
     const onKey=(event:KeyboardEvent)=>{ if(event.key==='Escape'){setSidebarOpen(false);setSidebarCollapsed(true)} }
