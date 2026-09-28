@@ -305,6 +305,5 @@ export default function App() {
     </div>
   )
 }
-}
 function fileToDataUrl(file:File):Promise<string>{return new Promise((resolve,reject)=>{if(file.size>4*1024*1024){reject(new Error('Please choose a file smaller than 4 MB.'));return}const r=new FileReader();r.onload=()=>resolve(String(r.result));r.onerror=()=>reject(new Error('Could not read the selected file.'));r.readAsDataURL(file)})}
 function dataUrlToInlineData(dataUrl:string){const match=dataUrl.match(/^data:([^;]+);base64,(.*)$/s);return match?{mime_type:match[1],data:match[2]}:undefined}
