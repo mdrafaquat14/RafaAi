@@ -1,0 +1,27 @@
+import { createClient } from '@supabase/supabase-js'
+
+const url = import.meta.env.VITE_SUPABASE_URL as string | undefined
+const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined
+
+export const isSupabaseConfigured = Boolean(url && key)
+
+export const supabase = isSupabaseConfigured
+  ? createClient(url!, key!, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+      },
+    })
+  : null
+
+export async function getProfile(userId: string) {
+  if (!supabase) return null
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, full_name, role, status')
+    .eq('id', userId)
+    .maybeSingle()
+  if (error) throw error
+  return data
+}
