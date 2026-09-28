@@ -134,7 +134,7 @@ export default function App() {
     setInput(''); setAttachment(null); setBusy(true)
     try {
       if(!isSupabaseConfigured) throw new Error('RafaAi backend is not connected yet. Add the Supabase environment variables from .env.example.')
-      const contents=[{role:'user',parts:[{text:`[RafaAi behavior instructions — follow internally]\n${RAFAAI_IDENTITY}`}]},...nextMessages.map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}, ...(m.role==='user' && m.imageDataUrl ? [{inline_data: dataUrlToInlineData(m.imageDataUrl)}] : [])]}))]
+      const contents=[{role:'user',parts:[{text:`[RafaAi behavior instructions — follow internally]\n${RAFAAI_IDENTITY}`}]},...nextMessages.map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}, ...(m.role==='user' && m.attachmentDataUrl ? [{inline_data: dataUrlToInlineData(m.attachmentDataUrl)}] : [])]}))]
       await generateAnswer({contents,guest:!signedIn,guestQuestionNumber:!signedIn?guestReplies+1:undefined,guestId:!signedIn?storage.guestId():undefined,classLevel:profile?.class_level||undefined,mode},(delta)=>{
         setChats(prev=>prev.map(c=>c.id===chat.id?{...c,messages:c.messages.map(m=>m.id===assistantId?{...m,content:m.content+delta}:m),updatedAt:Date.now()}:c))
       })
@@ -156,7 +156,7 @@ export default function App() {
     const chatId=activeChat.id
     updateChat({...activeChat,messages:[...withoutAssistant,{id:assistantId,role:'assistant',content:'',createdAt:Date.now()}],updatedAt:Date.now()}); setBusy(true); setError('')
     try {
-      const contents=[{role:'user',parts:[{text:`[RafaAi behavior instructions — follow internally]\n${RAFAAI_IDENTITY}`}]},...withoutAssistant.map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}, ...(m.role==='user' && m.imageDataUrl ? [{inline_data: dataUrlToInlineData(m.imageDataUrl)}] : [])]}))]
+      const contents=[{role:'user',parts:[{text:`[RafaAi behavior instructions — follow internally]\n${RAFAAI_IDENTITY}`}]},...withoutAssistant.map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}, ...(m.role==='user' && m.attachmentDataUrl ? [{inline_data: dataUrlToInlineData(m.attachmentDataUrl)}] : [])]}))]
       await generateAnswer({contents,guest:!signedIn,guestQuestionNumber:!signedIn?guestReplies+1:undefined,guestId:!signedIn?storage.guestId():undefined,classLevel:profile?.class_level||undefined,mode},(delta)=>{
         setChats(prev=>prev.map(c=>c.id===chatId?{...c,messages:c.messages.map(m=>m.id===assistantId?{...m,content:m.content+delta}:m),updatedAt:Date.now()}:c))
       })
@@ -186,5 +186,5 @@ export default function App() {
     {settingsOpen&&<SettingsModal onClose={()=>setSettingsOpen(false)} theme={theme} setTheme={setTheme} onChatsCleared={()=>{setChats([]);setActiveId(null);setSettingsOpen(false)}} userName={profile?.full_name||user?.email?.split('@')[0]||null} classLevel={profile?.class_level||null} email={user?.email||null} onProfileUpdated={(name,classLevel)=>setProfile(prev=>prev?{...prev,full_name:name,class_level:classLevel}:prev)} onLogout={signOut}/>}
   </div>
 }
-function fileToDataUrl(file:File):Promise<string>{return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result));r.onerror=reject;r.readAsDataURL(file)})}
+function fileToDataUrl(file:File):Promise<string>{return new Promise((resolve,reject)=>{if(file.size>4*1024*1024){reject(new Error('Please choose a file smaller than 4 MB.'));return}const r=new FileReader();r.onload=()=>resolve(String(r.result));r.onerror=()=>reject(new Error('Could not read the selected file.'));r.readAsDataURL(file)})}
 function dataUrlToInlineData(dataUrl:string){const match=dataUrl.match(/^data:([^;]+);base64,(.*)$/s);return match?{mime_type:match[1],data:match[2]}:undefined}
