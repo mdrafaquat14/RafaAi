@@ -199,6 +199,14 @@ export default function App() {
   function feedback(id:string,value:boolean){if(!activeChat)return;updateChat({...activeChat,messages:activeChat.messages.map(m=>m.id===id?{...m,liked:value}:m)})}
   function prompt(text:string,m:PromptMode){setMode(m);setInput(text);setTimeout(()=>document.querySelector<HTMLTextAreaElement>('.composer textarea')?.focus(),0)}
   const composer=<Composer value={input} onChange={setInput} onSend={()=>send()} busy={busy} mode={mode} setMode={setMode} attachment={attachment} setAttachment={setAttachment} onStop={stop}/>
+  const creditMeter = signedIn ? (
+    <div className={creditStatus?.unlimited ? 'credit-live unlimited' : 'credit-live'}><span className="credit-live-dot"></span><b>{creditStatus?.unlimited ? 'Unlimited AI' : (creditStatus?.remaining ?? '—') + ' credits left'}</b>{!creditStatus?.unlimited && <span>of {creditStatus?.limit ?? 20} today</span>}</div>
+  ) : (
+    <div className="credit-live guest"><span className="credit-live-dot"></span><b>{Math.max(0,5-guestReplies)} guest replies left</b></div>
+  )
+  const composerArea = creditLimitReached
+    ? <CreditLimit status={creditStatus} onRequest={requestMoreAccess}/>
+    : <><div className="composer-credit-row">{creditMeter}</div>{composer}</>
 
   return (
     <div className="app-shell">
@@ -231,7 +239,7 @@ export default function App() {
         />
         <div className="chat-scroll">
           {!activeChat ? (
-            <Welcome onPrompt={prompt} composer={composer} />
+            <Welcome onPrompt={prompt} composer={composerArea} />
           ) : (
             <div className="messages-container">
               {activeChat.messages.map((m, i) => {
@@ -259,27 +267,7 @@ export default function App() {
             </div>
           )}
         </div>
-        {activeChat && (
-          <div className="composer-area">
-            {creditLimitReached ? (
-              <CreditLimit status={creditStatus} onRequest={requestMoreAccess} />
-            ) : (
-              <>
-                <div className="guest-meter">
-                  {!signedIn ? (
-                    <>
-                      <span>{guestReplies < 5 ? `${5 - guestReplies} guest replies remaining` : 'Guest limit reached'}</span>
-                      <button onClick={() => setAuthOpen(true)}>{guestReplies >= 5 ? 'Log in' : 'Create account'}</button>
-                    </>
-                  ) : (
-                    <span>
-                      {creditStatus?.unlimited
-                        ? 'Unlimited AI access'
-                        : creditStatus?.remaining != null
-                          ? `${creditStatus.remaining} / ${creditStatus.limit ?? 20} AI credits remaining`
-                          : 'AI credits active'}
-                    </span>
-                  )}
+        <div className="composer-area">{composerArea}</div>
                 </div>
                 {composer}
               </>
