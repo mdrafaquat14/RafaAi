@@ -124,3 +124,53 @@
   .sidebar{width:min(320px,88vw);height:100dvh}
   .sidebar-close-mobile{width:38px;height:38px;flex:0 0 38px}
 }
+
+
+/* Responsive sidebar refinement: compact mobile drawer, fluid desktop sizing,
+   and safe-area spacing on modern phones. */
+.sidebar-close-mobile{display:none}
+@media (min-width:901px) and (max-width:1200px){
+  .sidebar{width:250px;flex-basis:250px}
+  .sidebar-head{padding-left:12px;padding-right:12px}
+  .sidebar-body{padding-left:10px;padding-right:10px}
+  .sidebar-footer{padding:10px}
+}
+@media(max-width:900px){
+  .sidebar{
+    width:min(290px,84vw);
+    flex-basis:min(290px,84vw);
+    max-width:290px;
+    height:100dvh;
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  .sidebar-head{
+    min-height:64px;
+    height:64px;
+    padding:0 11px;
+  }
+  .sidebar-body{padding:12px 10px}
+  .sidebar-footer{padding:10px}
+  .sidebar-close-mobile{
+    display:grid;
+    width:36px;
+    height:36px;
+    flex:0 0 36px;
+    margin-left:auto;
+  }
+  .sidebar-backdrop{z-index:55}
+  .sidebar{z-index:60}
+  .composer-area{
+    padding-left:max(10px,env(safe-area-inset-left));
+    padding-right:max(10px,env(safe-area-inset-right));
+    padding-bottom:max(12px,env(safe-area-inset-bottom));
+  }
+}
+@media(max-width:600px){
+  .sidebar{width:min(280px,82vw);max-width:280px}
+  .sidebar-head{height:60px;min-height:60px}
+  .sidebar-close-mobile{width:34px;height:34px;flex-basis:34px}
+  .new-chat-button{height:42px}
+  .search-box{height:40px}
+  .side-link{height:40px}
+  .sidebar-footer{padding:9px}
+}
