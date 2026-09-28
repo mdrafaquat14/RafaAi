@@ -18,7 +18,7 @@ export default function App() {
   const [theme,setTheme] = useState<Theme>(storage.theme())
   const [chats,setChats] = useState<ChatSession[]>(storage.chats())
   const [activeId,setActiveId] = useState<string|null>(null)
-  const [sidebarOpen,setSidebarOpen] = useState(false)
+  const [sidebarOpen,setSidebarOpen] = useState(()=>typeof window!=='undefined' ? window.innerWidth<=900 : false)
   const [sidebarCollapsed,setSidebarCollapsed] = useState(false)
   const [authOpen,setAuthOpen] = useState(false)
   const [settingsOpen,setSettingsOpen] = useState(false)
@@ -36,11 +36,21 @@ export default function App() {
 
   useEffect(()=>{ document.documentElement.dataset.theme=theme; storage.saveTheme(theme) },[theme])
   useEffect(()=>{ storage.saveChats(chats) },[chats])\n  useEffect(()=>{
-    if(!sidebarOpen) return
-    const onKey=(event:KeyboardEvent)=>{ if(event.key==='Escape') setSidebarOpen(false) }
+    const onKey=(event:KeyboardEvent)=>{ if(event.key==='Escape'){setSidebarOpen(false);setSidebarCollapsed(true)} }
+    const onPointerDown=(event:PointerEvent)=>{
+      const target=event.target as HTMLElement|null
+      if(!target || target.closest('.sidebar')) return
+      if(target.closest('.mobile-menu')) return
+      if(window.innerWidth<=900) setSidebarOpen(false)
+      else setSidebarCollapsed(true)
+    }
     window.addEventListener('keydown',onKey)
-    return ()=>window.removeEventListener('keydown',onKey)
-  },[sidebarOpen])
+    document.addEventListener('pointerdown',onPointerDown)
+    return ()=>{
+      window.removeEventListener('keydown',onKey)
+      document.removeEventListener('pointerdown',onPointerDown)
+    }
+  },[])
 
 
   useEffect(()=>{
