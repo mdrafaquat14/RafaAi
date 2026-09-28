@@ -72,7 +72,7 @@ export default function App() {
 
   function updateChat(next: ChatSession) { setChats(prev=>prev.map(c=>c.id===next.id?next:c)) }
   function newChat() { setActiveId(null); setInput(''); setError(''); setAttachment(null); setSidebarOpen(false) }
-  function selectChat(id:string) { setActiveId(id); setError(''); setSidebarOpen(false) }
+  function selectChat(id:string) { setActiveId(id); setError(''); setSidebarOpen(false); setSidebarCollapsed(false) }
   function deleteChat(id:string) { setChats(prev=>prev.filter(c=>c.id!==id)); if(activeId===id)setActiveId(null) }
   function renameChat(id:string,title:string) { const t=title.trim(); if(!t)return; setChats(prev=>prev.map(c=>c.id===id?{...c,title:t}:c)) }
   async function signOut(){await supabase?.auth.signOut();setUser(null);setProfile(null);newChat()}
@@ -80,7 +80,7 @@ export default function App() {
   function ensureChat(title:string):ChatSession {
     if(activeChat) return activeChat
     const chat:ChatSession={id:uid(),title:title.slice(0,52)||'New chat',createdAt:Date.now(),updatedAt:Date.now(),messages:[]}
-    setChats(prev=>[chat,...prev]); setActiveId(chat.id); return chat
+    setChats(prev=>[chat,...prev]); setActiveId(chat.id); setSidebarCollapsed(false); return chat
   }
 
   async function send(text=input) {
