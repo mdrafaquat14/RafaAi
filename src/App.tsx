@@ -101,11 +101,13 @@ export default function App() {
     supabase.auth.getSession().then(async ({data})=>{
       const session=data.session
       setUser(session?.user?{id:session.user.id,email:session.user.email}:null)
+      setCreditStatus(null); setCreditLimitReached(false)
       if(session?.user) { const p=await getProfile(session.user.id).catch(()=>null); setProfile(p); if(p?.role==='admin'){ setCreditStatus({ready:true,unlimited:true,remaining:null,limit:null,reset_at:null}); setCreditLimitReached(false) } else setTimeout(refreshCredits,0) }
     })
     const {data:listener}=supabase.auth.onAuthStateChange(async (event,session)=>{
       if(event==='PASSWORD_RECOVERY') setAuthOpen(true)
       setUser(session?.user?{id:session.user.id,email:session.user.email}:null)
+      setCreditStatus(null); setCreditLimitReached(false)
       if(session?.user) { const p=await getProfile(session.user.id).catch(()=>null); setProfile(p); if(p?.role==='admin'){ setCreditStatus({ready:true,unlimited:true,remaining:null,limit:null,reset_at:null}); setCreditLimitReached(false) } else setTimeout(refreshCredits,0) }
       else { setProfile(null); setCreditStatus(null); setCreditLimitReached(false) }
     })
@@ -119,11 +121,11 @@ export default function App() {
       if(!error && data?.creditStatus){
         const r=data.creditStatus
         setCreditStatus({ready:true,unlimited:!!r.unlimited,remaining:r.remaining==null?null:Number(r.remaining),limit:r.limit==null?null:Number(r.limit),base_limit:r.base_limit==null?null:Number(r.base_limit),bonus:r.bonus==null?null:Number(r.bonus),reset_at:r.reset_at||null})
-        setCreditLimitReached(!r.unlimited && Number(r.remaining)<=0)
+        setCreditLimitReached(r.ready === true && !r.unlimited && Number(r.remaining) <= 0)
       }
     }catch{}
   }
-  useEffect(()=>{if(user && profile?.role !== 'admin') refreshCredits()},[user?.id])
+  useEffect(()=>{if(user && profile?.role !== 'admin') refreshCredits()},[user?.id, profile?.role])
   // Keep the limit screen in sync with admin approvals/credit changes without requiring a reload.
   useEffect(()=>{
     if(!user || !creditLimitReached) return
