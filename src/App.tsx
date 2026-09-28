@@ -102,30 +102,38 @@ export default function App() {
       const session=data.session
       setUser(session?.user?{id:session.user.id,email:session.user.email}:null)
       setCreditStatus(null); setCreditLimitReached(false)
-      if(session?.user) { const p=await getProfile(session.user.id).catch(()=>null); setProfile(p); if(p?.role==='admin'){ setCreditStatus({ready:true,unlimited:true,remaining:null,limit:null,reset_at:null}); setCreditLimitReached(false) } else setTimeout(refreshCredits,0) }
+      if(session?.user) { const p=await getProfile(session.user.id).catch(()=>null); setProfile(p); if(p?.role==='admin'){ setCreditStatus({ready:true,unlimited:true,remaining:null,limit:null,reset_at:null}); setCreditLimitReached(false) } else { setCreditStatus(null); setCreditLimitReached(false); setTimeout(()=>refreshCredits(session.user.id),0) } }
     })
     const {data:listener}=supabase.auth.onAuthStateChange(async (event,session)=>{
       if(event==='PASSWORD_RECOVERY') setAuthOpen(true)
       setUser(session?.user?{id:session.user.id,email:session.user.email}:null)
       setCreditStatus(null); setCreditLimitReached(false)
-      if(session?.user) { const p=await getProfile(session.user.id).catch(()=>null); setProfile(p); if(p?.role==='admin'){ setCreditStatus({ready:true,unlimited:true,remaining:null,limit:null,reset_at:null}); setCreditLimitReached(false) } else setTimeout(refreshCredits,0) }
+      if(session?.user) { const p=await getProfile(session.user.id).catch(()=>null); setProfile(p); if(p?.role==='admin'){ setCreditStatus({ready:true,unlimited:true,remaining:null,limit:null,reset_at:null}); setCreditLimitReached(false) } else { setCreditStatus(null); setCreditLimitReached(false); setTimeout(()=>refreshCredits(session.user.id),0) } }
       else { setProfile(null); setCreditStatus(null); setCreditLimitReached(false) }
     })
     return ()=>listener.subscription.unsubscribe()
   },[])
 
-  async function refreshCredits(){
-    if(!user || !supabase) return
+  async function refreshCredits(userId?:string){
+    const targetUserId=userId||user?.id
+    if(!targetUserId || !supabase) return
     try{
       const {data,error}=await supabase.functions.invoke('rafaai-account',{body:{action:'get_credit_status'}})
-      if(!error && data?.creditStatus){
-        const r=data.creditStatus
-        setCreditStatus({ready:true,unlimited:!!r.unlimited,remaining:r.remaining==null?null:Number(r.remaining),limit:r.limit==null?null:Number(r.limit),base_limit:r.base_limit==null?null:Number(r.base_limit),bonus:r.bonus==null?null:Number(r.bonus),reset_at:r.reset_at||null})
-        setCreditLimitReached(r.ready === true && !r.unlimited && Number(r.remaining) <= 0)
-      }
-    }catch{}
+      if(error || !data?.creditStatus) return
+      const r=data.creditStatus
+      const unlimited=!!r.unlimited
+      const remaining=r.remaining==null?null:Number(r.remaining)
+      const limit=r.limit==null?null:Number(r.limit)
+      setCreditStatus({ready:r.ready !== false,unlimited,remaining,limit,base_limit:r.base_limit==null?null:Number(r.base_limit),bonus:r.bonus==null?null:Number(r.bonus),reset_at:r.reset_at||null})
+      // Never block a fresh/valid account unless the server explicitly reports exactly 0.
+      // The backend remains the final authority when a message is actually sent.
+      setCreditLimitReached(!unlimited && remaining === 0)
+    }catch{
+      // A temporary status-fetch failure must not lock the composer.
+      setCreditLimitReached(false)
+    }
   }
-  useEffect(()=>{if(user && profile?.role !== 'admin') refreshCredits()},[user?.id, profile?.role])
+  useEffect(()=>{if(user && profile && profile.role !== 'admin') refreshCredits(user.id)},[user?.id, profile?.role])
   // Keep the limit screen in sync with admin approvals/credit changes without requiring a reload.
   useEffect(()=>{
     if(!user || !creditLimitReached) return
@@ -161,7 +169,7 @@ export default function App() {
   async function send(text=input) {
     const clean=text.trim(); if(!clean || busy)return
     if(!signedIn && guestReplies>=5){setAuthOpen(true);return}
-    if(signedIn && profile?.role !== 'admin' && creditLimitReached){setError('Your daily AI credit limit has been reached.');return}
+    if(signedIn && profile?.role !== 'admin' && creditLimitReached && creditStatus?.remaining === 0){setError('Your daily AI credit limit has been reached.');return}
     setError('')
     const chat=ensureChat(clean)
     const attachmentDataUrl = attachment ? await fileToDataUrl(attachment) : undefined
