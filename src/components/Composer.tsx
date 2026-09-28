@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import type { PromptMode } from '../types'
-import { FileText, Globe, ImageIcon, Paperclip, Send, Sparkles, X } from './Icons'
+import { Globe, ImageIcon, Paperclip, Send, Sparkles, X } from './Icons'
 
 interface Props { value:string; onChange:(v:string)=>void; onSend:()=>void; busy:boolean; mode:PromptMode; setMode:(m:PromptMode)=>void; attachment:File|null; setAttachment:(f:File|null)=>void; onStop:()=>void; compact?:boolean }
 export function Composer({value,onChange,onSend,busy,mode,setMode,attachment,setAttachment,onStop,compact}:Props) {
@@ -10,7 +10,7 @@ export function Composer({value,onChange,onSend,busy,mode,setMode,attachment,set
   const [search,setSearch]=useState(false)
   function handleKey(e:React.KeyboardEvent<HTMLTextAreaElement>){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();if(!busy)onSend()}}\n  function chooseFile(file:File|null){if(!file)return;if(file.size>4*1024*1024){window.alert('Please choose a file smaller than 4 MB.');return}setAttachment(file)}
   return <div className={`composer ${compact?'composer-compact':''} ${busy?'is-busy':''}`}>
-    {attachment&&<div className="attachment-preview">{attachment.type.startsWith('image/')?<ImageIcon size={16}/>:<FileText size={16}/>}<span>{attachment.name}</span><button onClick={()=>setAttachment(null)} disabled={busy}><X size={15}/></button></div>}
+    {attachment&&<div className="attachment-preview">{attachment.type.startsWith('image/')?<ImageIcon size={16}/>:<Paperclip size={16}/>}<span>{attachment.name}</span><button onClick={()=>setAttachment(null)} disabled={busy}><X size={15}/></button></div>}
     <div className="composer-main">
       <button className={`composer-tool ${toolsOpen?'selected':''}`} onClick={()=>setToolsOpen(!toolsOpen)} disabled={busy} aria-label="Add attachment"><Paperclip/></button>
       <textarea ref={inputRef} value={value} onChange={e=>onChange(e.target.value)} onKeyDown={handleKey} placeholder={busy?'RafaAi is thinking…':'Ask RafaAi anything…'} rows={1} disabled={busy}/>
