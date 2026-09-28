@@ -35,7 +35,13 @@ export default function App() {
   const signedIn = Boolean(user)
 
   useEffect(()=>{ document.documentElement.dataset.theme=theme; storage.saveTheme(theme) },[theme])
-  useEffect(()=>{ storage.saveChats(chats) },[chats])
+  useEffect(()=>{ storage.saveChats(chats) },[chats])\n  useEffect(()=>{
+    if(!sidebarOpen) return
+    const onKey=(event:KeyboardEvent)=>{ if(event.key==='Escape') setSidebarOpen(false) }
+    window.addEventListener('keydown',onKey)
+    return ()=>window.removeEventListener('keydown',onKey)
+  },[sidebarOpen])
+
 
   useEffect(()=>{
     if(!supabase) return
