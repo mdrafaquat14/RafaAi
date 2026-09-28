@@ -11,7 +11,7 @@ export function Sidebar({open,collapsed,chats,activeId,onClose,onCollapse,onNew,
   const filtered=useMemo(()=>chats.filter(c=>c.title.toLowerCase().includes(query.toLowerCase())),[chats,query])
   return <aside className={`sidebar ${open?'is-open':''} ${collapsed?'is-collapsed':''}`}>
     <div className="sidebar-head">
-      <button className="brand-button" onClick={onNew} aria-label="New chat"><Logo compact />{!collapsed&&<span className="brand-head-name">RafaAi</span>}</button>
+      <button className="brand-button" onClick={()=>collapsed?onCollapse():onNew()} aria-label={collapsed?'Open sidebar':'New chat'}><Logo compact />{!collapsed&&<span className="brand-head-name">RafaAi</span>}</button>
       <button className="icon-button sidebar-collapse" onClick={onCollapse} aria-label={collapsed?'Expand sidebar':'Collapse sidebar'}>{collapsed?<span className="collapse-glyph">›</span>:<ChevronLeft/>}</button>
     </div>
     <div className="sidebar-body">
