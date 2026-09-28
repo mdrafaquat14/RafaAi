@@ -107,6 +107,24 @@ export default function App() {
     return ()=>listener.subscription.unsubscribe()
   },[])
 
+  async function refreshCredits(){
+    if(!user || !supabase) return
+    try{
+      const {data,error}=await supabase.functions.invoke('rafaai-account',{body:{action:'get_credit_status'}})
+      if(!error && data?.creditStatus){
+        const r=data.creditStatus
+        setCreditStatus({ready:true,unlimited:!!r.unlimited,remaining:r.remaining==null?null:Number(r.remaining),limit:r.limit==null?null:Number(r.limit),base_limit:r.base_limit==null?null:Number(r.base_limit),bonus:r.bonus==null?null:Number(r.bonus),reset_at:r.reset_at||null})
+        setCreditLimitReached(!r.unlimited && Number(r.remaining)<=0)
+      }
+    }catch{}
+  }
+  useEffect(()=>{if(user) refreshCredits()},[user?.id])
+  async function requestMoreAccess(message:string,requestedCredits:number|null){
+    if(!supabase) return
+    const {error}=await supabase.functions.invoke('rafaai-account',{body:{action:'request_more_access',message,requestedCredits}})
+    if(error) throw error
+  }
+
   function updateChat(next: ChatSession) { setChats(prev=>prev.map(c=>c.id===next.id?next:c)) }
   function newChat() { setActiveId(null); setInput(''); setError(''); setAttachment(null); setSidebarOpen(false) }
   function selectChat(id:string) { setActiveId(id); setError(''); setSidebarOpen(false); setSidebarCollapsed(false) }
@@ -123,6 +141,7 @@ export default function App() {
   async function send(text=input) {
     const clean=text.trim(); if(!clean || busy)return
     if(!signedIn && guestReplies>=5){setAuthOpen(true);return}
+    if(signedIn && creditLimitReached){setError('Your daily AI credit limit has been reached.');return}
     setError('')
     const chat=ensureChat(clean)
     const attachmentDataUrl = attachment ? await fileToDataUrl(attachment) : undefined
@@ -135,15 +154,18 @@ export default function App() {
     try {
       if(!isSupabaseConfigured) throw new Error('RafaAi backend is not connected yet. Add the Supabase environment variables from .env.example.')
       const contents=[{role:'user',parts:[{text:`[RafaAi behavior instructions — follow internally]\n${RAFAAI_IDENTITY}`}]},...nextMessages.map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}, ...(m.role==='user' && m.attachmentDataUrl ? [{inline_data: dataUrlToInlineData(m.attachmentDataUrl)}] : [])]}))]
-      await generateAnswer({contents,guest:!signedIn,guestQuestionNumber:!signedIn?guestReplies+1:undefined,guestId:!signedIn?storage.guestId():undefined,classLevel:profile?.class_level||undefined,mode},(delta)=>{
+      const result = await generateAnswer({contents,guest:!signedIn,guestQuestionNumber:!signedIn?guestReplies+1:undefined,guestId:!signedIn?storage.guestId():undefined,classLevel:profile?.class_level||undefined,mode},(delta)=>{
         setChats(prev=>prev.map(c=>c.id===chat.id?{...c,messages:c.messages.map(m=>m.id===assistantId?{...m,content:m.content+delta}:m),updatedAt:Date.now()}:c))
       })
+      if(result?.creditStatus){const remaining=result.creditStatus.remaining==='unlimited'?null:Number(result.creditStatus.remaining);setCreditStatus(prev=>({...prev,ready:true,remaining,limit:result.creditStatus.limit==='unlimited'?null:Number(result.creditStatus.limit),reset_at:result.creditStatus.resetAt||prev?.reset_at||null}));setCreditLimitReached(remaining===0)}
+      if(result?.creditStatus){const remaining=result.creditStatus.remaining==='unlimited'?null:Number(result.creditStatus.remaining);setCreditStatus(prev=>({...prev,ready:true,remaining,limit:result.creditStatus.limit==='unlimited'?null:Number(result.creditStatus.limit),reset_at:result.creditStatus.resetAt||prev?.reset_at||null}));setCreditLimitReached(remaining===0)}
       if(!signedIn){const next=storage.incrementGuestReplies();setGuestReplies(next);if(next>=5)setAuthOpen(true)}
     } catch(err:any) {
       setChats(prev=>prev.map(c=>c.id===chat.id?{...c,messages:c.messages.filter(m=>m.id!==assistantId),updatedAt:Date.now()}:c))
       if(err?.status===401){setAuthOpen(true);setError('Please log in to continue.');return}
       if(err?.code==='GUEST_LIMIT_REACHED'){setGuestReplies(5);setAuthOpen(true);setError('Your 5 free guest replies are finished. Create an account to continue.');return}
       if(err?.code==='ACCOUNT_RESTRICTED'){setError('This account is currently restricted from using RafaAi.');return}
+      if(err?.code==='DAILY_CREDIT_LIMIT'){setCreditStatus({ready:true,unlimited:false,remaining:0,limit:Number(err?.details?.dailyCreditLimit||20),reset_at:err?.details?.resetAt||null});setCreditLimitReached(true);setError('');return}
       setError(err?.message||'Something went wrong while generating the answer.')
     } finally { setBusy(false) }
   }
@@ -157,7 +179,7 @@ export default function App() {
     updateChat({...activeChat,messages:[...withoutAssistant,{id:assistantId,role:'assistant',content:'',createdAt:Date.now()}],updatedAt:Date.now()}); setBusy(true); setError('')
     try {
       const contents=[{role:'user',parts:[{text:`[RafaAi behavior instructions — follow internally]\n${RAFAAI_IDENTITY}`}]},...withoutAssistant.map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}, ...(m.role==='user' && m.attachmentDataUrl ? [{inline_data: dataUrlToInlineData(m.attachmentDataUrl)}] : [])]}))]
-      await generateAnswer({contents,guest:!signedIn,guestQuestionNumber:!signedIn?guestReplies+1:undefined,guestId:!signedIn?storage.guestId():undefined,classLevel:profile?.class_level||undefined,mode},(delta)=>{
+      const result = await generateAnswer({contents,guest:!signedIn,guestQuestionNumber:!signedIn?guestReplies+1:undefined,guestId:!signedIn?storage.guestId():undefined,classLevel:profile?.class_level||undefined,mode},(delta)=>{
         setChats(prev=>prev.map(c=>c.id===chatId?{...c,messages:c.messages.map(m=>m.id===assistantId?{...m,content:m.content+delta}:m),updatedAt:Date.now()}:c))
       })
       if(!signedIn){const next=storage.incrementGuestReplies();setGuestReplies(next);if(next>=5)setAuthOpen(true)}
