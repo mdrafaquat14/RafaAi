@@ -15,7 +15,8 @@ export function AuthModal({onClose}:{onClose:()=>void}) {
       if(mode==='login'){
         const {error}=await supabase.auth.signInWithPassword({email:email.trim(),password});if(error)throw error;onClose()
       }else{
-        const {error,data}=await supabase.auth.signUp({email:email.trim(),password,options:{data:{full_name:name.trim(),class_level:classLevel.trim()}}});
+        const redirectTo = `${window.location.origin}/`
+        const {error,data}=await supabase.auth.signUp({email:email.trim(),password,options:{data:{full_name:name.trim(),class_level:classLevel.trim()},emailRedirectTo:redirectTo}});
         if(error)throw error
         setDone(data.session?'Account created successfully.':'Account created. Check your email if confirmation is enabled.')
         if(data.session) onClose()
