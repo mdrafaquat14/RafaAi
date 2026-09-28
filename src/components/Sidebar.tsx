@@ -4,9 +4,9 @@ import { Logo } from './Logo'
 import { BookOpen, ChevronLeft, MessageSquare, More, Plus, Search, Settings, Trash } from './Icons'
 
 interface Props {
-  open:boolean; collapsed:boolean; chats:ChatSession[]; activeId:string|null; onClose:()=>void; onCollapse:()=>void; onNew:()=>void; onSelect:(id:string)=>void; onDelete:(id:string)=>void; onRename:(id:string,title:string)=>void; onLogin:()=>void; onSettings:()=>void; userName:string|null; onLogout:()=>void
+  open:boolean; collapsed:boolean; chats:ChatSession[]; activeId:string|null; onClose:()=>void; onCollapse:()=>void; onNew:()=>void; onSelect:(id:string)=>void; onDelete:(id:string)=>void; onRename:(id:string,title:string)=>void; onLogin:()=>void; onSettings:()=>void; onAdmin:()=>void; isAdmin:boolean; userName:string|null; onLogout:()=>void
 }
-export function Sidebar({open,collapsed,chats,activeId,onCollapse,onNew,onSelect,onDelete,onRename,onLogin,onSettings,userName}:Props){
+export function Sidebar({open,collapsed,chats,activeId,onCollapse,onNew,onSelect,onDelete,onRename,onLogin,onSettings,onAdmin,isAdmin,userName}:Props){
   const [query,setQuery]=useState(''); const [menuId,setMenuId]=useState<string|null>(null)
   const filtered=useMemo(()=>chats.filter(c=>c.title.toLowerCase().includes(query.toLowerCase())),[chats,query])
   return <aside className={`sidebar ${open?'is-open':''} ${collapsed?'is-collapsed':''}`} onClick={()=>{if(collapsed) onCollapse()}} onTouchStart={()=>{if(collapsed) onCollapse()}}>
@@ -36,6 +36,7 @@ export function Sidebar({open,collapsed,chats,activeId,onCollapse,onNew,onSelect
       </div>
     </div>
     <div className="sidebar-footer">
+      {userName&&isAdmin&&<button className="side-link sidebar-settings-bottom" onClick={onAdmin}><Settings/><span>Admin access</span></button>}
       {userName?<button className="side-link sidebar-settings-bottom" onClick={onSettings}><Settings/><span>Settings</span></button>:<button className="sidebar-login" onClick={onLogin}><span>Log in</span><span>→</span></button>}
     </div>
   </aside>
