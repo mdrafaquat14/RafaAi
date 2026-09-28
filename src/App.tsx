@@ -61,7 +61,8 @@ export default function App() {
       setUser(session?.user?{id:session.user.id,email:session.user.email}:null)
       if(session?.user) setProfile(await getProfile(session.user.id).catch(()=>null))
     })
-    const {data:listener}=supabase.auth.onAuthStateChange(async (_event,session)=>{
+    const {data:listener}=supabase.auth.onAuthStateChange(async (event,session)=>{
+      if(event==='PASSWORD_RECOVERY') setAuthOpen(true)
       setUser(session?.user?{id:session.user.id,email:session.user.email}:null)
       if(session?.user) setProfile(await getProfile(session.user.id).catch(()=>null))
       else setProfile(null)
