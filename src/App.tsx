@@ -164,7 +164,15 @@ export default function App() {
     setChats(prev=>[chat,...prev]); setActiveId(chat.id); setSidebarCollapsed(false); return chat
   }
 
-  function inferClassFromMessage(text:string): string | undefined {\n    const t=text.toLowerCase();\n    const m=t.match(/(?:class|grade|standard|कक्षा)\\s*(?:no\\.?\\s*)?(1[0-2]|[1-9])(?:th|st|nd|rd)?\\b/);\n    if(m?.[1]) return `Class ${m[1]}`;\n    if(/\\bmatric(?:ulation)?\\b|\\bmatric\\b/i.test(text)) return 'Matric / Class 10';\n    return undefined;\n  }\n\n  async function send(text=input) {
+  function inferClassFromMessage(text:string): string | undefined {
+    const t=text.toLowerCase()
+    const m=t.match(/(?:class|grade|standard|कक्षा)\s*(?:no\.?\s*)?(1[0-2]|[1-9])(?:th|st|nd|rd)?\b/)
+    if(m?.[1]) return `Class ${m[1]}`
+    if(/\bmatric(?:ulation)?\b|\bmatric\b/i.test(text)) return 'Matric / Class 10'
+    return undefined
+  }
+
+  async function send(text=input) {
     const clean=text.trim(); if(!clean || busy)return
     if(!signedIn && guestReplies>=5){setAuthOpen(true);return}
     if(signedIn && profile?.role !== 'admin' && creditLimitReached && creditStatus?.remaining === 0){setError('Your daily AI credit limit has been reached.');return}
@@ -180,7 +188,8 @@ export default function App() {
     try {
       if(!isSupabaseConfigured) throw new Error('RafaAi backend is not connected yet. Add the Supabase environment variables from .env.example.')
       const contents=[{role:'user',parts:[{text:`[RafaAi behavior instructions — follow internally]\n${RAFAAI_IDENTITY}`}]},...nextMessages.map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}, ...(m.role==='user' && m.attachmentDataUrl ? [{inline_data: dataUrlToInlineData(m.attachmentDataUrl)}] : [])]}))]
-      const detectedClass=inferClassFromMessage(clean);\n      const effectiveClass=detectedClass||profile?.class_level||undefined;\n      const result = await generateAnswer({contents,guest:!signedIn,guestQuestionNumber:!signedIn?guestReplies+1:undefined,guestId:!signedIn?storage.guestId():undefined,classLevel:effectiveClass,mode},(delta)=>{
+      const detectedClass=inferClassFromMessage(clean)
+      const effectiveClass=detectedClass||profile?.class_level||undefined\n      const result = await generateAnswer({contents,guest:!signedIn,guestQuestionNumber:!signedIn?guestReplies+1:undefined,guestId:!signedIn?storage.guestId():undefined,classLevel:effectiveClass,mode},(delta)=>{
         setChats(prev=>prev.map(c=>c.id===chat.id?{...c,messages:c.messages.map(m=>m.id===assistantId?{...m,content:m.content+delta}:m),updatedAt:Date.now()}:c))
       })
       if(result?.creditStatus){const remaining=result.creditStatus.remaining==='unlimited'?null:Number(result.creditStatus.remaining);setCreditStatus(prev=>({...prev,ready:true,remaining,limit:result.creditStatus.limit==='unlimited'?null:Number(result.creditStatus.limit),reset_at:result.creditStatus.resetAt||prev?.reset_at||null}));}
@@ -211,7 +220,9 @@ export default function App() {
     updateChat({...activeChat,messages:[...withoutAssistant,{id:assistantId,role:'assistant',content:'',createdAt:Date.now()}],updatedAt:Date.now()}); setBusy(true); setError('')
     try {
       const contents=[{role:'user',parts:[{text:`[RafaAi behavior instructions — follow internally]\n${RAFAAI_IDENTITY}`}]},...withoutAssistant.map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}, ...(m.role==='user' && m.attachmentDataUrl ? [{inline_data: dataUrlToInlineData(m.attachmentDataUrl)}] : [])]}))]
-      const lastUserMessage=withoutAssistant.filter(m=>m.role==='user').at(-1)?.content||'';\n      const detectedClass=inferClassFromMessage(lastUserMessage);\n      const effectiveClass=detectedClass||profile?.class_level||undefined;\n      const result = await generateAnswer({contents,guest:!signedIn,guestQuestionNumber:!signedIn?guestReplies+1:undefined,guestId:!signedIn?storage.guestId():undefined,classLevel:effectiveClass,mode},(delta)=>{
+      const lastUserMessage=withoutAssistant.filter(m=>m.role==='user').at(-1)?.content||''
+      const detectedClass=inferClassFromMessage(lastUserMessage)
+      const effectiveClass=detectedClass||profile?.class_level||undefined\n      const result = await generateAnswer({contents,guest:!signedIn,guestQuestionNumber:!signedIn?guestReplies+1:undefined,guestId:!signedIn?storage.guestId():undefined,classLevel:effectiveClass,mode},(delta)=>{
         setChats(prev=>prev.map(c=>c.id===chatId?{...c,messages:c.messages.map(m=>m.id===assistantId?{...m,content:m.content+delta}:m),updatedAt:Date.now()}:c))
       })
       if(result?.creditStatus){const remaining=result.creditStatus.remaining==='unlimited'?null:Number(result.creditStatus.remaining);setCreditStatus(prev=>({...prev,ready:true,remaining,limit:result.creditStatus.limit==='unlimited'?null:Number(result.creditStatus.limit),reset_at:result.creditStatus.resetAt||prev?.reset_at||null}))}
