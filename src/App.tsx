@@ -33,7 +33,6 @@ export default function App() {
   const [error,setError] = useState('')
   const [guestReplies,setGuestReplies] = useState(storage.guestReplies())
   const [creditStatus,setCreditStatus] = useState<CreditStatus|null>(null)
-  const [creditLimitReached,setCreditLimitReached] = useState(false)
   const [adminOpen,setAdminOpen] = useState(false)
 
   const activeChat = useMemo(()=>chats.find(c=>c.id===activeId)||null,[chats,activeId])
@@ -101,15 +100,15 @@ export default function App() {
     supabase.auth.getSession().then(async ({data})=>{
       const session=data.session
       setUser(session?.user?{id:session.user.id,email:session.user.email}:null)
-      setCreditStatus(null); setCreditLimitReached(false)
-      if(session?.user) { const p=await getProfile(session.user.id).catch(()=>null); setProfile(p); if(p?.role==='admin'){ setCreditStatus({ready:true,unlimited:true,remaining:null,limit:null,reset_at:null}); setCreditLimitReached(false) } else { setCreditStatus(null); setCreditLimitReached(false); setTimeout(()=>refreshCredits(session.user.id),0) } }
+      setCreditStatus(null)
+      if(session?.user) { const p=await getProfile(session.user.id).catch(()=>null); setProfile(p); if(p?.role==='admin'){ setCreditStatus({ready:true,unlimited:true,remaining:null,limit:null,reset_at:null}) } else { setCreditStatus(null); setTimeout(()=>refreshCredits(session.user.id),0) } }
     })
     const {data:listener}=supabase.auth.onAuthStateChange(async (event,session)=>{
       if(event==='PASSWORD_RECOVERY') setAuthOpen(true)
       setUser(session?.user?{id:session.user.id,email:session.user.email}:null)
       setCreditStatus(null); setCreditLimitReached(false)
       if(session?.user) { const p=await getProfile(session.user.id).catch(()=>null); setProfile(p); if(p?.role==='admin'){ setCreditStatus({ready:true,unlimited:true,remaining:null,limit:null,reset_at:null}); setCreditLimitReached(false) } else { setCreditStatus(null); setCreditLimitReached(false); setTimeout(()=>refreshCredits(session.user.id),0) } }
-      else { setProfile(null); setCreditStatus(null); setCreditLimitReached(false) }
+      else { setProfile(null); setCreditStatus(null) }
     })
     return ()=>listener.subscription.unsubscribe()
   },[])
@@ -127,12 +126,11 @@ export default function App() {
       setCreditStatus({ready:r.ready !== false,unlimited,remaining,limit,base_limit:r.base_limit==null?null:Number(r.base_limit),bonus:r.bonus==null?null:Number(r.bonus),reset_at:r.reset_at||null})
       // Never block a fresh/valid account unless the server explicitly reports exactly 0.
       // The backend remains the final authority when a message is actually sent.
-      setCreditLimitReached(!unlimited && remaining === 0)
     }catch{
       // A temporary status-fetch failure must not lock the composer.
-      setCreditLimitReached(false)
     }
   }
+  const creditLimitReached = Boolean(profile?.role !== 'admin' && creditStatus?.ready === true && !creditStatus?.unlimited && creditStatus.remaining === 0)
   useEffect(()=>{if(user && profile && profile.role !== 'admin') refreshCredits(user.id)},[user?.id, profile?.role])
   // Keep the limit screen in sync with admin approvals/credit changes without requiring a reload.
   useEffect(()=>{
@@ -185,14 +183,14 @@ export default function App() {
       const result = await generateAnswer({contents,guest:!signedIn,guestQuestionNumber:!signedIn?guestReplies+1:undefined,guestId:!signedIn?storage.guestId():undefined,classLevel:profile?.class_level||undefined,mode},(delta)=>{
         setChats(prev=>prev.map(c=>c.id===chat.id?{...c,messages:c.messages.map(m=>m.id===assistantId?{...m,content:m.content+delta}:m),updatedAt:Date.now()}:c))
       })
-      if(result?.creditStatus){const remaining=result.creditStatus.remaining==='unlimited'?null:Number(result.creditStatus.remaining);setCreditStatus(prev=>({...prev,ready:true,remaining,limit:result.creditStatus.limit==='unlimited'?null:Number(result.creditStatus.limit),reset_at:result.creditStatus.resetAt||prev?.reset_at||null}));setCreditLimitReached(remaining===0)}
+      if(result?.creditStatus){const remaining=result.creditStatus.remaining==='unlimited'?null:Number(result.creditStatus.remaining);setCreditStatus(prev=>({...prev,ready:true,remaining,limit:result.creditStatus.limit==='unlimited'?null:Number(result.creditStatus.limit),reset_at:result.creditStatus.resetAt||prev?.reset_at||null}));}
       if(!signedIn){const next=storage.incrementGuestReplies();setGuestReplies(next);if(next>=5)setAuthOpen(true)}
     } catch(err:any) {
       setChats(prev=>prev.map(c=>c.id===chat.id?{...c,messages:c.messages.filter(m=>m.id!==assistantId),updatedAt:Date.now()}:c))
       if(err?.status===401){setAuthOpen(true);setError('Please log in to continue.');return}
       if(err?.code==='GUEST_LIMIT_REACHED'){setGuestReplies(5);setAuthOpen(true);setError('Your 5 free guest replies are finished. Create an account to continue.');return}
       if(err?.code==='ACCOUNT_RESTRICTED'){setError('This account is currently restricted from using RafaAi.');return}
-      if(err?.code==='DAILY_CREDIT_LIMIT'){setCreditStatus({ready:true,unlimited:false,remaining:0,limit:Number(err?.details?.dailyCreditLimit||20),reset_at:err?.details?.resetAt||null});setCreditLimitReached(true);setError('');return}
+      if(err?.code==='DAILY_CREDIT_LIMIT'){setCreditStatus({ready:true,unlimited:false,remaining:0,limit:Number(err?.details?.dailyCreditLimit||20),reset_at:err?.details?.resetAt||null});setError('');return}
       setError(err?.message||'Something went wrong while generating the answer.')
     } finally { setBusy(false) }
   }
