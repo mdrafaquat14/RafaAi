@@ -7,7 +7,7 @@ type AuthMode='login'|'signup'|'reset'
 export function AuthModal({onClose}:{onClose:()=>void}) {
  const [mode,setMode]=useState<AuthMode>(()=>typeof window!=='undefined'&&window.location.hash.includes('type=recovery')?'reset':'login')
  const [email,setEmail]=useState(''),[password,setPassword]=useState(''),[name,setName]=useState(''),[classLevel,setClassLevel]=useState('')
- const [busy,setBusy]=useState(false),[error,setError]=useState(''),[done,setDone]=useState('')
+ const [busy,setBusy]=useState(false),[error,setError]=useState(''),[done,setDone]=useState(''),[verificationEmail,setVerificationEmail]=useState('')
  useEffect(()=>{if(mode==='reset')setDone('Choose a new password for your RafaAi account.')},[mode])
  async function submit(e:React.FormEvent){
    e.preventDefault();setError('');setDone('')
@@ -20,8 +20,8 @@ export function AuthModal({onClose}:{onClose:()=>void}) {
       const redirectTo=window.location.origin+'/'
       const {error,data}=await supabase.auth.signUp({email:email.trim(),password,options:{data:{full_name:name.trim(),class_level:classLevel.trim()},emailRedirectTo:redirectTo}})
       if(error)throw error
-      setDone(data.session?'Account created successfully.':'Account created. Check your email if confirmation is enabled.')
-      if(data.session)onClose()
+      if(data.session){setDone('Account created successfully.');onClose()}
+      else setVerificationEmail(email.trim())
     }else{
       const {error}=await supabase.auth.updateUser({password});if(error)throw error
       window.history.replaceState({},document.title,window.location.pathname+window.location.search)
@@ -33,17 +33,37 @@ export function AuthModal({onClose}:{onClose:()=>void}) {
  async function forgotPassword(){
    if(!supabase||!email.trim()){setError('Enter your account email first.');return}
    setError('');setDone('');setBusy(true)
-   try{
-     const {error}=await supabase.auth.resetPasswordForEmail(email.trim(),{redirectTo:window.location.origin+'/'})
+   try{const {error}=await supabase.auth.resetPasswordForEmail(email.trim(),{redirectTo:window.location.origin+'/'})
      if(error)throw error
      setDone('Password reset link sent. Check your email.')
    }catch(err:any){setError(err?.message||'Could not send the reset email.')}finally{setBusy(false)}
  }
- function switchMode(next:AuthMode){setMode(next);setError('');setDone(next==='reset'?'Choose a new password for your RafaAi account.':'')}
- return <div className="modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget&&mode!=='reset')onClose()}}>
+ async function resendVerification(){
+   if(!supabase||!verificationEmail)return
+   setError('');setDone('');setBusy(true)
+   try{const {error}=await supabase.auth.resend({type:'signup',email:verificationEmail,options:{emailRedirectTo:window.location.origin+'/'}})
+     if(error)throw error
+     setDone('A new verification email has been sent. Please check your inbox.')
+   }catch(err:any){setError(err?.message||'Could not resend the verification email.')}finally{setBusy(false)}
+ }
+ function switchMode(next:AuthMode){setMode(next);setError('');setDone(next==='reset'?'Choose a new password for your RafaAi account.':'');setVerificationEmail('')}
+ return <div className="modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget&&mode!=='reset'&&!verificationEmail)onClose()}}>
   <div className="auth-card">
    {mode!=='reset'&&<button className="modal-close" onClick={onClose} aria-label="Close"><X/></button>}
    <div className="auth-logo-wrap"><Logo/></div>
+   {verificationEmail ? <>
+    <div className="auth-verify-icon" aria-hidden="true">✓</div><div className="eyebrow">EMAIL VERIFICATION</div>
+    <h2>Check your email</h2><p className="auth-verify-copy">We've sent a verification link to</p>
+    <div className="auth-verify-email">{verificationEmail}</div>
+    <div className="auth-verify-steps">
+      <div><b>1</b><span>Open your email inbox and find the message from RafaAi.</span></div>
+      <div><b>2</b><span>Click the verification link to confirm your email address.</span></div>
+      <div><b>3</b><span>Return to RafaAi and log in to start using your account.</span></div>
+    </div>
+    {error&&<div className="form-error">{error}</div>}{done&&<div className="form-success">{done}</div>}
+    <button className="primary-wide" onClick={resendVerification} disabled={busy}>{busy?'Sending…':'Resend verification email'}</button>
+    <button className="verify-secondary" onClick={()=>setVerificationEmail('')}>Back to sign up</button>
+   </> : <>
    <div className="eyebrow">{mode==='login'?'WELCOME BACK':mode==='signup'?'JOIN RAFAAI':'PASSWORD RECOVERY'}</div>
    <h2>{mode==='login'?'Log in to RafaAi':mode==='signup'?'Create your RafaAi account':'Set a new password'}</h2>
    <p>{mode==='login'?'Continue your chats and keep learning.':mode==='signup'?'Save your chats and continue beyond guest mode.':'Create a new password to secure your account.'}</p>
@@ -59,6 +79,7 @@ export function AuthModal({onClose}:{onClose:()=>void}) {
    {mode==='login'&&<div className="auth-helper">New here? <button onClick={()=>switchMode('signup')}>Create your account</button></div>}
    {mode==='signup'&&<div className="auth-helper">Already registered? <button onClick={()=>switchMode('login')}>Log in instead</button></div>}
    {mode==='reset'&&<div className="auth-helper">Back to <button onClick={()=>switchMode('login')}>Log in</button></div>}
+   </>}
   </div>
  </div>
 }
