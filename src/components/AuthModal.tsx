@@ -49,7 +49,7 @@ export function AuthModal({onClose}:{onClose:()=>void}) {
    <p>{mode==='login'?'Continue your chats and keep learning.':mode==='signup'?'Save your chats and continue beyond guest mode.':'Create a new password to secure your account.'}</p>
    {mode!=='reset'&&<div className="auth-tabs" role="tablist"><button className={mode==='login'?'active':''} onClick={()=>switchMode('login')}>Log in</button><button className={mode==='signup'?'active signup-tab':''} onClick={()=>switchMode('signup')}>Create account</button></div>}
    <form onSubmit={submit}>
-    {mode==='signup'&&<><label>Name<input value={name} onChange={e=>setName(e.target.value)} placeholder="Your name" autoComplete="name" required/></label><label>Class<input value={classLevel} onChange={e=>setClassLevel(e.target.value)} placeholder="e.g. Class 10 / Matric" required/></label></>}
+    {mode==='signup'&&<><label>Name<input value={name} onChange={e=>setName(e.target.value)} placeholder="Your name" autoComplete="name" required/></label><label>Class <span className="optional-label">(optional)</span><input value={classLevel} onChange={e=>setClassLevel(e.target.value)} placeholder="e.g. Class 10 / Matric"/></label></>}
     {mode!=='reset'&&<label>Email<input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com" autoComplete="email" required/></label>}
     <label>Password<input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder={mode==='reset'?'New password (6+ characters)':'At least 6 characters'} minLength={6} autoComplete={mode==='login'?'current-password':'new-password'} required/></label>
     {error&&<div className="form-error">{error}</div>}{done&&<div className="form-success">{done}</div>}
