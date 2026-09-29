@@ -207,7 +207,7 @@ export default function App() {
       const result = await generateAnswer({contents,guest:!signedIn,guestQuestionNumber:!signedIn?guestReplies+1:undefined,guestId:!signedIn?storage.guestId():undefined,classLevel:profile?.class_level||undefined,mode},(delta)=>{
         setChats(prev=>prev.map(c=>c.id===chatId?{...c,messages:c.messages.map(m=>m.id===assistantId?{...m,content:m.content+delta}:m),updatedAt:Date.now()}:c))
       })
-      if(result?.creditStatus){const remaining=result.creditStatus.remaining==='unlimited'?null:Number(result.creditStatus.remaining);setCreditStatus(prev=>({...prev,ready:true,remaining,limit:result.creditStatus.limit==='unlimited'?null:Number(result.creditStatus.limit),reset_at:result.creditStatus.resetAt||prev?.reset_at||null}));setCreditLimitReached(remaining===0)}
+      if(result?.creditStatus){const remaining=result.creditStatus.remaining==='unlimited'?null:Number(result.creditStatus.remaining);setCreditStatus(prev=>({...prev,ready:true,remaining,limit:result.creditStatus.limit==='unlimited'?null:Number(result.creditStatus.limit),reset_at:result.creditStatus.resetAt||prev?.reset_at||null}))}
       if(!signedIn){const next=storage.incrementGuestReplies();setGuestReplies(next);if(next>=5)setAuthOpen(true)}
     }catch(err:any){
       setChats(prev=>prev.map(c=>c.id===chatId?{...c,messages:c.messages.filter(m=>m.id!==assistantId),updatedAt:Date.now()}:c))
