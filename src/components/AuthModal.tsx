@@ -7,7 +7,7 @@ type AuthMode='login'|'signup'|'reset'
 export function AuthModal({onClose}:{onClose:()=>void}) {
  const [mode,setMode]=useState<AuthMode>(()=>typeof window!=='undefined'&&window.location.hash.includes('type=recovery')?'reset':'login')
  const [email,setEmail]=useState(''),[password,setPassword]=useState(''),[name,setName]=useState(''),[classLevel,setClassLevel]=useState('')
- const [busy,setBusy]=useState(false),[error,setError]=useState(''),[done,setDone]=useState(''),[verificationEmail,setVerificationEmail]=useState('')
+ const [busy,setBusy]=useState(false),[error,setError]=useState(''),[done,setDone]=useState(''),[verificationEmail,setVerificationEmail]=useState(''),[resendCooldown,setResendCooldown]=useState(0)
  useEffect(()=>{if(mode==='reset')setDone('Choose a new password for your RafaAi account.')},[mode])
  async function submit(e:React.FormEvent){
    e.preventDefault();setError('');setDone('')
@@ -38,15 +38,36 @@ export function AuthModal({onClose}:{onClose:()=>void}) {
      setDone('Password reset link sent. Check your email.')
    }catch(err:any){setError(err?.message||'Could not send the reset email.')}finally{setBusy(false)}
  }
+ function emailProvider(){
+   const domain=verificationEmail.split('@')[1]?.toLowerCase()||''
+   if(domain==='gmail.com'||domain==='googlemail.com')return 'gmail'
+   if(domain==='outlook.com'||domain==='hotmail.com'||domain==='live.com'||domain==='msn.com')return 'outlook'
+   if(domain==='yahoo.com'||domain.endsWith('.yahoo.com'))return 'yahoo'
+   return 'email'
+ }
+ function openEmailInbox(){
+   const provider=emailProvider()
+   const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+   if(provider==='gmail'&&isMobile){
+     const fallback=window.setTimeout(()=>{window.open('https://mail.google.com/mail/u/0/#inbox','_blank','noopener,noreferrer')},900)
+     try{window.location.href='intent://#Intent;scheme=googlegmail;package=com.google.android.gm;end'}catch{window.clearTimeout(fallback);window.open('https://mail.google.com/mail/u/0/#inbox','_blank','noopener,noreferrer')}
+     return
+   }
+   const urls:{[key:string]:string}={gmail:'https://mail.google.com/mail/u/0/#inbox',outlook:'https://outlook.live.com/mail/0/inbox',yahoo:'https://mail.yahoo.com/',email:'mailto:'}
+   if(provider==='email'){window.location.href='mailto:';return}
+   window.open(urls[provider],'_blank','noopener,noreferrer')
+ }
  async function resendVerification(){
-   if(!supabase||!verificationEmail)return
+   if(!supabase||!verificationEmail||resendCooldown>0)return
    setError('');setDone('');setBusy(true)
    try{const {error}=await supabase.auth.resend({type:'signup',email:verificationEmail,options:{emailRedirectTo:window.location.origin+'/'}})
      if(error)throw error
      setDone('A new verification email has been sent. Please check your inbox.')
+     setResendCooldown(30)
    }catch(err:any){setError(err?.message||'Could not resend the verification email.')}finally{setBusy(false)}
  }
- function switchMode(next:AuthMode){setMode(next);setError('');setDone(next==='reset'?'Choose a new password for your RafaAi account.':'');setVerificationEmail('')}
+ useEffect(()=>{if(resendCooldown<=0)return;const timer=window.setInterval(()=>setResendCooldown(v=>Math.max(0,v-1)),1000);return()=>window.clearInterval(timer)},[resendCooldown])
+ function switchMode(next:AuthMode){setMode(next);setError('');setDone(next==='reset'?'Choose a new password for your RafaAi account.':'');setVerificationEmail('');setResendCooldown(0)}
  return <div className="modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget&&mode!=='reset'&&!verificationEmail)onClose()}}>
   <div className="auth-card">
    {mode!=='reset'&&<button className="modal-close" onClick={onClose} aria-label="Close"><X/></button>}
@@ -61,7 +82,8 @@ export function AuthModal({onClose}:{onClose:()=>void}) {
       <div><b>3</b><span>Return to RafaAi and log in to start using your account.</span></div>
     </div>
     {error&&<div className="form-error">{error}</div>}{done&&<div className="form-success">{done}</div>}
-    <button className="primary-wide" onClick={resendVerification} disabled={busy}>{busy?'Sending…':'Resend verification email'}</button>
+    <button className="primary-wide verify-open-mail" onClick={openEmailInbox}>{emailProvider()==='gmail'?'💌 Open Gmail':'💌 Check your email'}</button>
+    <button className="verify-resend-link" onClick={resendVerification} disabled={busy||resendCooldown>0}>{busy?'Sending…':resendCooldown>0?`Resend email in ${resendCooldown}s`:'↻ Resend email'}</button>
     <button className="verify-secondary" onClick={()=>setVerificationEmail('')}>Back to sign up</button>
    </> : <>
    <div className="eyebrow">{mode==='login'?'WELCOME BACK':mode==='signup'?'JOIN RAFAAI':'PASSWORD RECOVERY'}</div>
