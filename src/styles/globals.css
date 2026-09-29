@@ -343,3 +343,12 @@
 @media(max-width:700px){.admin-dashboard{width:100%;height:100dvh;max-height:100dvh;border-radius:0}.admin-head{padding:18px 16px 14px}.admin-head h2{font-size:20px}.admin-tabs{padding:8px}.admin-overview,.admin-section{padding:14px 12px 20px}.admin-stat-grid{grid-template-columns:1fr 1fr}.admin-overview-grid{grid-template-columns:1fr}.admin-control-grid button{flex:1 1 auto}.admin-user-card,.admin-request-card{padding:12px}.admin-toolbar{position:sticky;top:0;z-index:2;padding-bottom:8px;background:var(--panel)}}
 
 .auth-verify-icon{width:58px;height:58px;margin:8px auto 14px;border-radius:18px;display:grid;place-items:center;background:color-mix(in srgb,var(--accent) 14%,transparent);border:1px solid color-mix(in srgb,var(--accent) 35%,var(--line2));color:var(--accent);font-size:27px;font-weight:850}.auth-verify-copy{margin-bottom:5px!important}.auth-verify-email{font-size:14px;font-weight:750;word-break:break-word;margin-bottom:20px;color:var(--text)}.auth-verify-steps{display:flex;flex-direction:column;gap:10px;text-align:left;margin:0 0 18px}.auth-verify-steps>div{display:flex;gap:11px;align-items:flex-start;padding:11px 12px;border:1px solid var(--line);background:var(--panel2);border-radius:12px}.auth-verify-steps b{width:22px;height:22px;flex:0 0 22px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:var(--accentText);font-size:11px}.auth-verify-steps span{font-size:12px;line-height:1.45;color:var(--muted)}.verify-secondary{width:100%;height:40px;margin-top:9px;border:1px solid var(--line2);border-radius:11px;color:var(--muted);font-size:12px;font-weight:650}.verify-secondary:hover{background:var(--panel2);color:var(--text)}
+
+
+/* Email verification CTA refinement */
+.verify-open-mail{height:48px;font-size:13px;box-shadow:0 8px 22px color-mix(in srgb,var(--accent) 16%,transparent)}
+.verify-open-mail:hover{box-shadow:0 10px 26px color-mix(in srgb,var(--accent) 22%,transparent)}
+.verify-resend-link{display:block;margin:10px auto 0;padding:4px 8px;color:var(--muted);font-size:11px;font-weight:650;text-decoration:underline;text-underline-offset:3px}
+.verify-resend-link:hover:not(:disabled){color:var(--text)}
+.verify-resend-link:disabled{opacity:.55}
+@media(max-width:600px){.verify-open-mail{height:50px;font-size:13px}.verify-resend-link{font-size:10px}}
