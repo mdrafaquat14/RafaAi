@@ -200,7 +200,7 @@ export default function App() {
       if(err?.status===401){setAuthOpen(true);setError('Please log in to continue.');return}
       if(err?.code==='GUEST_LIMIT_REACHED'){setGuestReplies(5);setAuthOpen(true);setError('Your 5 free guest replies are finished. Create an account to continue.');return}
       if(err?.code==='ACCOUNT_RESTRICTED'){setError('This account is currently restricted from using RafaAi.');return}
-      if(err?.code==='GEMINI_DAILY_QUOTA_EXHAUSTED' || err?.code==='GEMINI_QUOTA_EXHAUSTED'){setError('Gemini quota exhausted. Please try again after the quota resets.');return}
+      if(err?.code==='GEMINI_DAILY_QUOTA_EXHAUSTED' || err?.code==='GEMINI_QUOTA_EXHAUSTED'){setError('RafaAi quota exhausted. Please try again after the quota resets.');return}
       if(err?.code==='DAILY_CREDIT_LIMIT'){setCreditStatus({ready:true,unlimited:false,remaining:0,limit:Number(err?.details?.dailyCreditLimit||20),reset_at:err?.details?.resetAt||null});setError('');return}
       setError(err?.message||'Something went wrong while generating the answer.')
     } finally {
