@@ -192,7 +192,14 @@ export default function App() {
       if(err?.code==='ACCOUNT_RESTRICTED'){setError('This account is currently restricted from using RafaAi.');return}
       if(err?.code==='DAILY_CREDIT_LIMIT'){setCreditStatus({ready:true,unlimited:false,remaining:0,limit:Number(err?.details?.dailyCreditLimit||20),reset_at:err?.details?.resetAt||null});setError('');return}
       setError(err?.message||'Something went wrong while generating the answer.')
-    } finally { setBusy(false) }
+    } finally {
+      setBusy(false)
+      // Keep the physical-keyboard workflow fast: after sending, restore focus on laptops/desktops.
+      // Touch devices are intentionally excluded so a phone keyboard is never reopened automatically.
+      if (typeof window !== 'undefined' && window.navigator.maxTouchPoints === 0) {
+        requestAnimationFrame(() => document.querySelector<HTMLTextAreaElement>('.composer textarea')?.focus())
+      }
+    }
   }
 
   async function regenerate(){
