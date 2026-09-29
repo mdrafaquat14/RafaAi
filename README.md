@@ -28,3 +28,5 @@ Required Vercel environment variables are documented in `.env.example`.
 
 
 <!-- credit-access-system -->
+
+<!-- production-deploy-check: 2026-09-29 -->
