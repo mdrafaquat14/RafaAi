@@ -47,10 +47,22 @@ export function AuthModal({onClose}:{onClose:()=>void}) {
  }
  function openEmailInbox(){
    const provider=emailProvider()
-   const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
-   if(provider==='gmail'&&isMobile){
-     const fallback=window.setTimeout(()=>{window.open('https://mail.google.com/mail/u/0/#inbox','_blank','noopener,noreferrer')},900)
+   const isAndroid=/Android/i.test(navigator.userAgent)
+   const isAppleMobile=/iPhone|iPad|iPod/i.test(navigator.userAgent)
+   if(provider==='gmail'&&isAndroid){
+     let openedApp=false
+     const fallback=window.setTimeout(()=>{if(!openedApp)window.open('https://mail.google.com/mail/u/0/#inbox','_blank','noopener,noreferrer')},1200)
+     const markOpened=()=>{openedApp=true;window.clearTimeout(fallback)}
+     document.addEventListener('visibilitychange',()=>{if(document.hidden)markOpened()},{once:true})
      try{window.location.href='intent://#Intent;scheme=googlegmail;package=com.google.android.gm;end'}catch{window.clearTimeout(fallback);window.open('https://mail.google.com/mail/u/0/#inbox','_blank','noopener,noreferrer')}
+     return
+   }
+   if(provider==='gmail'&&isAppleMobile){
+     let openedApp=false
+     const fallback=window.setTimeout(()=>{if(!openedApp)window.open('https://mail.google.com/mail/u/0/#inbox','_blank','noopener,noreferrer')},1200)
+     const markOpened=()=>{openedApp=true;window.clearTimeout(fallback)}
+     document.addEventListener('visibilitychange',()=>{if(document.hidden)markOpened()},{once:true})
+     try{window.location.href='googlegmail://'}catch{window.clearTimeout(fallback);window.open('https://mail.google.com/mail/u/0/#inbox','_blank','noopener,noreferrer')}
      return
    }
    const urls:{[key:string]:string}={gmail:'https://mail.google.com/mail/u/0/#inbox',outlook:'https://outlook.live.com/mail/0/inbox',yahoo:'https://mail.yahoo.com/',email:'mailto:'}
