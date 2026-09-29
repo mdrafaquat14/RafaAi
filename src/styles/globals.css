@@ -207,7 +207,7 @@
   .topbar{flex:0 0 62px}
   .chat-scroll{height:calc(100dvh - 62px);min-height:0;overflow-y:auto;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch}
   .messages-container{padding-top:20px;padding-bottom:calc(150px + env(safe-area-inset-bottom));}
-  .composer-area{position:fixed;left:0;right:0;bottom:var(--keyboard-offset);z-index:25;padding:7px max(10px,env(safe-area-inset-left)) max(8px,env(safe-area-inset-bottom));background:linear-gradient(to top,var(--bg) 82%,transparent);transition:bottom .12s ease;}
+  .composer-area{position:fixed;left:0;right:0;bottom:var(--keyboard-offset);z-index:25;padding:7px max(10px,env(safe-area-inset-left)) max(8px,env(safe-area-inset-bottom));background:linear-gradient(to top,var(--bg) 82%,transparent);transition:bottom .12s ease;will-change:bottom;}
   .composer-area .composer{width:100%;max-width:900px}
   .guest-meter{margin-bottom:5px}
   .composer{border-radius:16px}
