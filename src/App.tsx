@@ -106,8 +106,8 @@ export default function App() {
     const {data:listener}=supabase.auth.onAuthStateChange(async (event,session)=>{
       if(event==='PASSWORD_RECOVERY') setAuthOpen(true)
       setUser(session?.user?{id:session.user.id,email:session.user.email}:null)
-      setCreditStatus(null); setCreditLimitReached(false)
-      if(session?.user) { const p=await getProfile(session.user.id).catch(()=>null); setProfile(p); if(p?.role==='admin'){ setCreditStatus({ready:true,unlimited:true,remaining:null,limit:null,reset_at:null}); setCreditLimitReached(false) } else { setCreditStatus(null); setCreditLimitReached(false); setTimeout(()=>refreshCredits(session.user.id),0) } }
+      setCreditStatus(null); 
+      if(session?.user) { const p=await getProfile(session.user.id).catch(()=>null); setProfile(p); if(p?.role==='admin'){ setCreditStatus({ready:true,unlimited:true,remaining:null,limit:null,reset_at:null});  } else { setCreditStatus(null);  setTimeout(()=>refreshCredits(session.user.id),0) } }
       else { setProfile(null); setCreditStatus(null) }
     })
     return ()=>listener.subscription.unsubscribe()
@@ -211,7 +211,7 @@ export default function App() {
       if(!signedIn){const next=storage.incrementGuestReplies();setGuestReplies(next);if(next>=5)setAuthOpen(true)}
     }catch(err:any){
       setChats(prev=>prev.map(c=>c.id===chatId?{...c,messages:c.messages.filter(m=>m.id!==assistantId),updatedAt:Date.now()}:c))
-      if(err?.code==='DAILY_CREDIT_LIMIT'){setCreditStatus({ready:true,unlimited:false,remaining:0,limit:Number(err?.details?.dailyCreditLimit||20),reset_at:err?.details?.resetAt||null});setCreditLimitReached(true);setError('');return}
+      if(err?.code==='DAILY_CREDIT_LIMIT'){setCreditStatus({ready:true,unlimited:false,remaining:0,limit:Number(err?.details?.dailyCreditLimit||20),reset_at:err?.details?.resetAt||null});setError('');return}
       setError(err?.message||'Could not regenerate the answer.')
     }finally{setBusy(false)}
   }
