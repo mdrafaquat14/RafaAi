@@ -566,3 +566,7 @@
 .sidebar-info-links a{min-width:0;padding:5px 2px;border-radius:7px;color:var(--faint);font-size:9px;line-height:1.15;text-align:center;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sidebar-info-links a:hover{background:var(--panel2);color:var(--text)}
 .is-collapsed .sidebar-info-links{display:none}
+
+.contact-detail-item{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1 1 220px}
+.contact-detail-label{font-size:9px!important;text-transform:uppercase;letter-spacing:.06em;color:var(--faint)!important;font-weight:750}
+.contact-detail-item strong{font-size:11px;font-weight:750;color:var(--text);overflow-wrap:anywhere}
