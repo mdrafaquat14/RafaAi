@@ -19,9 +19,9 @@ function read<T>(key: string, fallback: T): T {
 export const storage = {
   chats(): ChatSession[] { return read<ChatSession[]>(CHAT_KEY, []) },
   saveChats(chats: ChatSession[]) { try { localStorage.setItem(CHAT_KEY, JSON.stringify(chats.slice(0, 50))) } catch {} },
-  theme(): Theme { return localStorage.getItem(THEME_KEY) === 'light' ? 'light' : 'dark' },
+  theme(): Theme { try { return localStorage.getItem(THEME_KEY) === 'light' ? 'light' : 'dark' } catch { return 'dark' } },
   saveTheme(theme: Theme) { try { localStorage.setItem(THEME_KEY, theme) } catch {} },
-  guestReplies(): number { return Math.min(5, Math.max(0, Number(localStorage.getItem(GUEST_KEY) || 0))) },
+  guestReplies(): number { try { return Math.min(5, Math.max(0, Number(localStorage.getItem(GUEST_KEY) || 0))) } catch { return 0 } },
   guestId(): string {
     try {
       const existing = localStorage.getItem(GUEST_ID_KEY)
@@ -39,15 +39,19 @@ export const storage = {
     return next
   },
   language(): 'auto' | 'en' | 'hi' | 'hinglish' {
-    const value = localStorage.getItem(LANG_KEY)
-    return value === 'en' || value === 'hi' || value === 'hinglish' ? value : 'auto'
+    try {
+      const value = localStorage.getItem(LANG_KEY)
+      return value === 'en' || value === 'hi' || value === 'hinglish' ? value : 'auto'
+    } catch { return 'auto' }
   },
   saveLanguage(value: 'auto' | 'en' | 'hi' | 'hinglish') { try { localStorage.setItem(LANG_KEY, value) } catch {} },
   responseStyle(): 'balanced' | 'concise' | 'detailed' {
-    const value = localStorage.getItem(RESPONSE_KEY)
-    return value === 'concise' || value === 'detailed' ? value : 'balanced'
+    try {
+      const value = localStorage.getItem(RESPONSE_KEY)
+      return value === 'concise' || value === 'detailed' ? value : 'balanced'
+    } catch { return 'balanced' }
   },
   saveResponseStyle(value: 'balanced' | 'concise' | 'detailed') { try { localStorage.setItem(RESPONSE_KEY, value) } catch {} },
-  clearChats() { localStorage.removeItem(CHAT_KEY) },
-  clearGuest() { localStorage.removeItem(GUEST_KEY) },
+  clearChats() { try { localStorage.removeItem(CHAT_KEY) } catch {} },
+  clearGuest() { try { localStorage.removeItem(GUEST_KEY) } catch {} },
 }
