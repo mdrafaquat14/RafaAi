@@ -85,16 +85,17 @@ export default function App() {
       }
     }
     const onPointerDown=(event:PointerEvent)=>{
+      if(window.innerWidth>900) return
       const target=event.target as HTMLElement|null
-      if(window.innerWidth<=900 && target && !target.closest('.sidebar') && !target.closest('.mobile-menu')){
-        setSidebarOpen(false)
-      }
+      if(!target) return
+      if(target.closest('.sidebar') || target.closest('.mobile-menu')) return
+      setSidebarOpen(false)
     }
     window.addEventListener('keydown',onKey)
-    document.addEventListener('pointerdown',onPointerDown)
+    document.addEventListener('pointerdown',onPointerDown,true)
     return ()=>{
       window.removeEventListener('keydown',onKey)
-      document.removeEventListener('pointerdown',onPointerDown)
+      document.removeEventListener('pointerdown',onPointerDown,true)
     }
   },[])
 
@@ -181,13 +182,6 @@ export default function App() {
     if(!signedIn && guestReplies>=5){setAuthOpen(true);return}
     if(signedIn && profile?.role !== 'admin' && creditLimitReached && creditStatus?.remaining === 0){setError('Your daily AI credit limit has been reached.');return}
     setError('')
-    const chat=ensureChat(clean)
-      const userMsg:ChatMessage={id:uid(),role:'user',content:clean,createdAt:Date.now()}
-      const assistantMsg:ChatMessage={id:uid(),role:'assistant',content:greeting,createdAt:Date.now()}
-      updateChat({...chat,messages:[...chat.messages,userMsg,assistantMsg],updatedAt:Date.now()})
-      setInput('');setAttachment(null)
-      return
-    }
     const chat=ensureChat(clean)
     const attachmentDataUrl = attachment ? await fileToDataUrl(attachment) : undefined
     const userMsg:ChatMessage={id:uid(),role:'user',content:clean,createdAt:Date.now(),attachmentName:attachment?.name,attachmentDataUrl,attachmentMimeType:attachment?.type||undefined,imageDataUrl:attachment?.type.startsWith('image/')?attachmentDataUrl:undefined}
@@ -281,7 +275,7 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      {sidebarOpen && <button className="sidebar-backdrop" aria-label="Close menu" onPointerDown={(event)=>{event.preventDefault();event.stopPropagation();setSidebarOpen(false)}} onClick={(event)=>{event.preventDefault();event.stopPropagation();setSidebarOpen(false)}} />}
+      {sidebarOpen && <button className="sidebar-backdrop" aria-label="Close menu" onPointerDown={(event)=>{event.preventDefault();event.stopPropagation();setSidebarOpen(false)}} />}
       <Sidebar
         onAdmin={() => setAdminOpen(true)}
         isAdmin={profile?.role === 'admin'}
