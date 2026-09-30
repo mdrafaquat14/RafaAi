@@ -42,12 +42,12 @@ export function ContactPage(){
    <form className="contact-form" onSubmit={submit}>
     <div className="contact-grid">
      <label>Name <span>*</span><input value={name} onChange={e=>setName(e.target.value)} placeholder="Your name" maxLength={100} required /></label>
-     <label>Email address <span>*</span><input value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com" inputMode="email" maxLength={160} /></label>\n     <label>Phone number <span>*</span><input value={phone} onChange={e=>setPhone(e.target.value)} placeholder="Your phone number" inputMode="tel" maxLength={30} required /></label>
+     <label>Email address <span>•</span><input value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com" inputMode="email" maxLength={160} /></label>\n     <label>Phone number <span>•</span><input value={phone} onChange={e=>setPhone(e.target.value)} placeholder="Your phone number" inputMode="tel" maxLength={30} /></label>
     </div>
     <label>Message <span>*</span><textarea value={message} onChange={e=>setMessage(e.target.value)} placeholder="Write your message here…" rows={7} maxLength={5000} required /></label>
     <label className="contact-file">Attachment <small>Optional · max 5 MB</small><input type="file" accept=".jpg,.jpeg,.png,.webp,.gif,.pdf,.txt,.doc,.docx,.xls,.xlsx" onChange={e=>setFile(e.target.files?.[0]||null)} /><span>{file ? file.name : 'Choose a file'}</span></label>
     {file&&<button type="button" className="contact-file-remove" onClick={()=>setFile(null)}>Remove attachment</button>}
-    <div className="contact-required-note">Name and message are required. Enter at least one of email or phone number.</div>
+    <div className="contact-required-note">Name and message are required. Provide at least one: email or phone number. Contact messages and attachments are automatically deleted after 30 days.</div>
     {error&&<div className="form-error">{error}</div>}
     <button className="primary-wide contact-submit" disabled={busy}>{busy?'Sending…':'Send message'}</button>
    </form>}
