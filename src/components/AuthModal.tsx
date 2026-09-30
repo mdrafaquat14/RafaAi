@@ -60,16 +60,17 @@ export function AuthModal({onClose}:{onClose:()=>void}) {
    }catch(err:any){setError(err?.message||'Could not send the reset email.')}finally{setBusy(false)}
  }
 
- function emailProvider(){
-   const domain=verificationEmail.split('@')[1]?.toLowerCase()||''
+ function emailProvider(value=verificationEmail){
+   const domain=value.split('@')[1]?.toLowerCase()||''
    if(domain==='gmail.com'||domain==='googlemail.com')return 'gmail'
    if(domain==='outlook.com'||domain==='hotmail.com'||domain==='live.com'||domain==='msn.com')return 'outlook'
    if(domain==='yahoo.com'||domain.endsWith('.yahoo.com'))return 'yahoo'
    return 'email'
  }
  function openEmailInbox(emailOverride?:string){
-   const providerEmail=emailOverride||verificationEmail
-   const provider=(()=>{const domain=providerEmail.split('@')[1]?.toLowerCase()||'';if(domain==='gmail.com'||domain==='googlemail.com')return 'gmail';if(domain==='outlook.com'||domain==='hotmail.com'||domain==='live.com'||domain==='msn.com')return 'outlook';if(domain==='yahoo.com'||domain.endsWith('.yahoo.com'))return 'yahoo';return 'email'})(),isAndroid=/Android/i.test(navigator.userAgent),isAppleMobile=/iPhone|iPad|iPod/i.test(navigator.userAgent)
+   const provider=emailProvider(emailOverride||verificationEmail)
+   const isAndroid=/Android/i.test(navigator.userAgent)
+   const isAppleMobile=/iPhone|iPad|iPod/i.test(navigator.userAgent)
    if(provider==='gmail'&&isAndroid){
      let openedApp=false
      const fallback=window.setTimeout(()=>{if(!openedApp)window.open('https://mail.google.com/mail/u/0/#inbox','_blank','noopener,noreferrer')},1200)
