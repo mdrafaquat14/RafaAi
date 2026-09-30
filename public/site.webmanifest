@@ -1,11 +1,24 @@
 {
+  "id":"/",
   "name":"RafaAi — Student AI Assistant",
   "short_name":"RafaAi",
   "start_url":"/",
+  "scope":"/",
   "display":"standalone",
   "background_color":"#0a0b0f",
   "theme_color":"#0a0b0f",
   "icons":[
-    {"src":"/rafaai-new-logo.png","sizes":"64x58","type":"image/png","purpose":"any maskable"}
+    {
+      "src":"/rafaai-new-logo.png?v=2",
+      "sizes":"512x466",
+      "type":"image/png",
+      "purpose":"any"
+    },
+    {
+      "src":"/logo96.png?v=2",
+      "sizes":"96x87",
+      "type":"image/png",
+      "purpose":"any"
+    }
   ]
 }
