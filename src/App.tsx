@@ -45,6 +45,7 @@ export default function App() {
   const [guestReplies,setGuestReplies] = useState(storage.guestReplies())
   const [creditStatus,setCreditStatus] = useState<CreditStatus|null>(null)
   const [adminOpen,setAdminOpen] = useState(false)
+  const abortControllerRef = useRef<AbortController | null>(null)
 
   const activeChat = useMemo(()=>chats.find(c=>c.id===activeId)||null,[chats,activeId])
   const signedIn = Boolean(user)
