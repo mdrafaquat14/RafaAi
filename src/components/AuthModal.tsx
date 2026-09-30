@@ -60,15 +60,15 @@ export function AuthModal({onClose}:{onClose:()=>void}) {
    }catch(err:any){setError(err?.message||'Could not send the reset email.')}finally{setBusy(false)}
  }
 
- function emailProvider(value=verificationEmail){
-   const domain=value.split('@')[1]?.toLowerCase()||''
+ function emailProvider(){
+   const domain=verificationEmail.split('@')[1]?.toLowerCase()||''
    if(domain==='gmail.com'||domain==='googlemail.com')return 'gmail'
    if(domain==='outlook.com'||domain==='hotmail.com'||domain==='live.com'||domain==='msn.com')return 'outlook'
    if(domain==='yahoo.com'||domain.endsWith('.yahoo.com'))return 'yahoo'
    return 'email'
  }
- function openEmailInbox(emailOverride?:string){
-   const provider=emailProvider(emailOverride||verificationEmail)
+ function openEmailInbox(){
+   const provider=emailProvider()
    const isAndroid=/Android/i.test(navigator.userAgent)
    const isAppleMobile=/iPhone|iPad|iPod/i.test(navigator.userAgent)
    if(provider==='gmail'&&isAndroid){
@@ -124,7 +124,7 @@ export function AuthModal({onClose}:{onClose:()=>void}) {
     <div className="auth-verify-email">{email}</div>
     <div className="auth-verify-steps"><div><b>1</b><span>Open your email inbox and find the password reset message from RafaAi.</span></div><div><b>2</b><span>Click the reset link. RafaAi will open the secure password-change page.</span></div></div>
     {error&&<div className="form-error">{error}</div>}
-    <button className="primary-wide verify-open-mail" onClick={()=>{setVerificationEmail(email);openEmailInbox(email)}}>💌 Check your email</button>
+    <div className="reset-email-note">📩 Check your email inbox for the secure password reset link.</div>
     <button className="verify-secondary" onClick={()=>{setResetSent(false);setMode('login')}}>Back to log in</button>
    </> : <>
    <div className="eyebrow">{mode==='login'?'WELCOME BACK':mode==='signup'?'JOIN RAFAAI':'PASSWORD RECOVERY'}</div>
