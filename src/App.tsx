@@ -91,10 +91,18 @@ export default function App() {
 
   useEffect(()=>{
     if(!supabase) return
+    const recoveryLink = typeof window !== 'undefined' && (
+      window.location.hash.includes('type=recovery') ||
+      new URLSearchParams(window.location.search).get('type') === 'recovery'
+    )
+    if(recoveryLink) setAuthOpen(true)
     supabase.auth.getSession().then(async ({data})=>{
       const session=data.session
       setUser(session?.user?{id:session.user.id,email:session.user.email}:null)
       setCreditStatus(null)
+      // Recovery links can establish the session before onAuthStateChange subscribes.
+      // Detecting the recovery URL above guarantees the password form is shown on first load.
+      if(recoveryLink && !session?.user) setAuthOpen(true)
       if(session?.user) { const p=await getProfile(session.user.id).catch(()=>null); setProfile(p); if(p?.role==='admin'){ setCreditStatus({ready:true,unlimited:true,remaining:null,limit:null,reset_at:null}) } else { setCreditStatus(null); setTimeout(()=>refreshCredits(session.user.id),0) } }
     })
     const {data:listener}=supabase.auth.onAuthStateChange(async (event,session)=>{
