@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ChatMessage, ChatSession, Profile, PromptMode, Theme } from './types'
 import { supabase, isSupabaseConfigured, getProfile } from './lib/supabase'
 import { extractText, generateAnswer } from './lib/api'
@@ -205,17 +205,20 @@ export default function App() {
     const withPlaceholder=[...nextMessages,{id:assistantId,role:'assistant' as const,content:'',createdAt:Date.now()}]
     updateChat({...chat,messages:withPlaceholder,updatedAt:Date.now()})
     setInput(''); setAttachment(null); setBusy(true)
+    const abortController = new AbortController()
+    abortControllerRef.current = abortController
     try {
       if(!isSupabaseConfigured) throw new Error('RafaAi backend is not connected yet. Add the Supabase environment variables from .env.example.')
       const contents=[{role:'user',parts:[{text:`[RafaAi behavior instructions — follow internally]\n${RAFAAI_IDENTITY}`}]},...nextMessages.map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}, ...(m.role==='user' && m.attachmentDataUrl ? [{inline_data: dataUrlToInlineData(m.attachmentDataUrl)}] : [])]}))]
       const detectedClass=inferClassFromMessage(clean)
       const effectiveClass=detectedClass||profile?.class_level||undefined
-      const result = await generateAnswer({contents,guest:!signedIn,guestQuestionNumber:!signedIn?guestReplies+1:undefined,guestId:!signedIn?storage.guestId():undefined,classLevel:effectiveClass,mode},(delta)=>{
+      const result = await generateAnswer({contents,guest:!signedIn,guestQuestionNumber:!signedIn?guestReplies+1:undefined,guestId:!signedIn?storage.guestId():undefined,classLevel:effectiveClass,mode,signal:abortController.signal},(delta)=>{
         setChats(prev=>prev.map(c=>c.id===chat.id?{...c,messages:c.messages.map(m=>m.id===assistantId?{...m,content:m.content+delta}:m),updatedAt:Date.now()}:c))
       })
       if(signedIn && result?.creditStatus){const remaining=result.creditStatus.remaining==='unlimited'?null:Number(result.creditStatus.remaining);setCreditStatus(prev=>({...prev,ready:true,remaining,limit:result.creditStatus.limit==='unlimited'?null:Number(result.creditStatus.limit),reset_at:result.creditStatus.resetAt||prev?.reset_at||null}));}
       if(!signedIn){const next=storage.incrementGuestReplies();setGuestReplies(next);if(next>=5)setAuthOpen(true)}
     } catch(err:any) {
+      if (err?.name === 'AbortError') return
       setChats(prev=>prev.map(c=>c.id===chat.id?{...c,messages:c.messages.filter(m=>m.id!==assistantId),updatedAt:Date.now()}:c))
       if(err?.status===401){setAuthOpen(true);setError('Please log in to continue.');return}
       if(err?.code==='GUEST_LIMIT_REACHED'){setGuestReplies(5);setAuthOpen(true);setError('Your 5 free guest replies are finished. Create an account to continue.');return}
@@ -224,6 +227,7 @@ export default function App() {
       if(err?.code==='DAILY_CREDIT_LIMIT'){setCreditStatus({ready:true,unlimited:false,remaining:0,limit:Number(err?.details?.dailyCreditLimit||20),reset_at:err?.details?.resetAt||null});setError('');return}
       setError(err?.message||'Something went wrong while generating the answer.')
     } finally {
+      if (abortControllerRef.current === abortController) abortControllerRef.current = null
       setBusy(false)
       // Keep the physical-keyboard workflow fast: after sending, restore focus on laptops/desktops.
       // Touch devices are intentionally excluded so a phone keyboard is never reopened automatically.
@@ -240,24 +244,33 @@ export default function App() {
     const assistantId=uid()
     const chatId=activeChat.id
     updateChat({...activeChat,messages:[...withoutAssistant,{id:assistantId,role:'assistant',content:'',createdAt:Date.now()}],updatedAt:Date.now()}); setBusy(true); setError('')
+    const abortController = new AbortController()
+    abortControllerRef.current = abortController
     try {
       const contents=[{role:'user',parts:[{text:`[RafaAi behavior instructions — follow internally]\n${RAFAAI_IDENTITY}`}]},...withoutAssistant.map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}, ...(m.role==='user' && m.attachmentDataUrl ? [{inline_data: dataUrlToInlineData(m.attachmentDataUrl)}] : [])]}))]
       const lastUserMessage=withoutAssistant.filter(m=>m.role==='user').at(-1)?.content||''
       const detectedClass=inferClassFromMessage(lastUserMessage)
       const effectiveClass=detectedClass||profile?.class_level||undefined
-      const result = await generateAnswer({contents,guest:!signedIn,guestQuestionNumber:!signedIn?guestReplies+1:undefined,guestId:!signedIn?storage.guestId():undefined,classLevel:effectiveClass,mode},(delta)=>{
+      const result = await generateAnswer({contents,guest:!signedIn,guestQuestionNumber:!signedIn?guestReplies+1:undefined,guestId:!signedIn?storage.guestId():undefined,classLevel:effectiveClass,mode,signal:abortController.signal},(delta)=>{
         setChats(prev=>prev.map(c=>c.id===chatId?{...c,messages:c.messages.map(m=>m.id===assistantId?{...m,content:m.content+delta}:m),updatedAt:Date.now()}:c))
       })
       if(signedIn && result?.creditStatus){const remaining=result.creditStatus.remaining==='unlimited'?null:Number(result.creditStatus.remaining);setCreditStatus(prev=>({...prev,ready:true,remaining,limit:result.creditStatus.limit==='unlimited'?null:Number(result.creditStatus.limit),reset_at:result.creditStatus.resetAt||prev?.reset_at||null}))}
       if(!signedIn){const next=storage.incrementGuestReplies();setGuestReplies(next);if(next>=5)setAuthOpen(true)}
     }catch(err:any){
+      if (err?.name === 'AbortError') return
       setChats(prev=>prev.map(c=>c.id===chatId?{...c,messages:c.messages.filter(m=>m.id!==assistantId),updatedAt:Date.now()}:c))
       if(err?.code==='DAILY_CREDIT_LIMIT'){setCreditStatus({ready:true,unlimited:false,remaining:0,limit:Number(err?.details?.dailyCreditLimit||20),reset_at:err?.details?.resetAt||null});setError('');return}
       setError(err?.message||'Could not regenerate the answer.')
-    }finally{setBusy(false)}
+    }finally{if (abortControllerRef.current === abortController) abortControllerRef.current = null; setBusy(false)}
   }
 
-  function stop(){setError('Generation stopped.');setBusy(false)}
+  function stop(){
+    if (!busy) return
+    abortControllerRef.current?.abort()
+    abortControllerRef.current = null
+    setError('Generation stopped.')
+    setBusy(false)
+  }
   function feedback(id:string,value:boolean){if(!activeChat)return;updateChat({...activeChat,messages:activeChat.messages.map(m=>m.id===id?{...m,liked:value}:m)})}
   function prompt(text:string,m:PromptMode){setMode(m);setInput(text);setTimeout(()=>document.querySelector<HTMLTextAreaElement>('.composer textarea')?.focus(),0)}
   const composer=<Composer value={input} onChange={setInput} onSend={()=>send()} busy={busy} mode={mode} setMode={setMode} attachment={attachment} setAttachment={setAttachment} onStop={stop}/>
