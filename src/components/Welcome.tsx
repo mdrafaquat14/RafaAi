@@ -15,5 +15,5 @@ export function Welcome({onPrompt}:{onPrompt:(text:string,mode:PromptMode)=>void
    <p className="welcome-subtitle">Ask a question, solve a problem, learn something new, or get help with your next task.</p>
    <div className="quick-modes" aria-label="Quick modes">{modes.map(item=><button key={item.label} onClick={()=>onPrompt(item.prompt,item.mode)}>{item.icon}<span>{item.label}</span></button>)}</div>
    <div className="welcome-note">RafaAi can make mistakes. Check important information with a teacher or trusted source.</div>
- </div><nav className="site-links" aria-label="Site information"><a href="/about">About</a><a href="/privacy">Privacy Policy</a><a href="/terms">Terms of Use</a><a href="/contact">Contact Us</a></nav></section>
+ </div></section>
 }
