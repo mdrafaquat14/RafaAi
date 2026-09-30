@@ -67,8 +67,9 @@ export function AuthModal({onClose}:{onClose:()=>void}) {
    if(domain==='yahoo.com'||domain.endsWith('.yahoo.com'))return 'yahoo'
    return 'email'
  }
- function openEmailInbox(){
-   const provider=emailProvider(),isAndroid=/Android/i.test(navigator.userAgent),isAppleMobile=/iPhone|iPad|iPod/i.test(navigator.userAgent)
+ function openEmailInbox(emailOverride?:string){
+   const providerEmail=emailOverride||verificationEmail
+   const provider=(()=>{const domain=providerEmail.split('@')[1]?.toLowerCase()||'';if(domain==='gmail.com'||domain==='googlemail.com')return 'gmail';if(domain==='outlook.com'||domain==='hotmail.com'||domain==='live.com'||domain==='msn.com')return 'outlook';if(domain==='yahoo.com'||domain.endsWith('.yahoo.com'))return 'yahoo';return 'email'})(),isAndroid=/Android/i.test(navigator.userAgent),isAppleMobile=/iPhone|iPad|iPod/i.test(navigator.userAgent)
    if(provider==='gmail'&&isAndroid){
      let openedApp=false
      const fallback=window.setTimeout(()=>{if(!openedApp)window.open('https://mail.google.com/mail/u/0/#inbox','_blank','noopener,noreferrer')},1200)
@@ -122,7 +123,7 @@ export function AuthModal({onClose}:{onClose:()=>void}) {
     <div className="auth-verify-email">{email}</div>
     <div className="auth-verify-steps"><div><b>1</b><span>Open your email inbox and find the password reset message from RafaAi.</span></div><div><b>2</b><span>Click the reset link. RafaAi will open the secure password-change page.</span></div></div>
     {error&&<div className="form-error">{error}</div>}
-    <button className="primary-wide verify-open-mail" onClick={()=>{setVerificationEmail(email);openEmailInbox()}}>💌 Check your email</button>
+    <button className="primary-wide verify-open-mail" onClick={()=>{setVerificationEmail(email);openEmailInbox(email)}}>💌 Check your email</button>
     <button className="verify-secondary" onClick={()=>{setResetSent(false);setMode('login')}}>Back to log in</button>
    </> : <>
    <div className="eyebrow">{mode==='login'?'WELCOME BACK':mode==='signup'?'JOIN RAFAAI':'PASSWORD RECOVERY'}</div>
