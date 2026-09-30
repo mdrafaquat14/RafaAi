@@ -18,9 +18,9 @@ function read<T>(key: string, fallback: T): T {
 
 export const storage = {
   chats(): ChatSession[] { return read<ChatSession[]>(CHAT_KEY, []) },
-  saveChats(chats: ChatSession[]) { localStorage.setItem(CHAT_KEY, JSON.stringify(chats.slice(0, 50))) },
+  saveChats(chats: ChatSession[]) { try { localStorage.setItem(CHAT_KEY, JSON.stringify(chats.slice(0, 50))) } catch {} },
   theme(): Theme { return localStorage.getItem(THEME_KEY) === 'light' ? 'light' : 'dark' },
-  saveTheme(theme: Theme) { localStorage.setItem(THEME_KEY, theme) },
+  saveTheme(theme: Theme) { try { localStorage.setItem(THEME_KEY, theme) } catch {} },
   guestReplies(): number { return Math.min(5, Math.max(0, Number(localStorage.getItem(GUEST_KEY) || 0))) },
   guestId(): string {
     try {
@@ -35,19 +35,19 @@ export const storage = {
   },
   incrementGuestReplies(): number {
     const next = Math.min(5, storage.guestReplies() + 1)
-    localStorage.setItem(GUEST_KEY, String(next))
+    try { localStorage.setItem(GUEST_KEY, String(next)) } catch {}
     return next
   },
   language(): 'auto' | 'en' | 'hi' | 'hinglish' {
     const value = localStorage.getItem(LANG_KEY)
     return value === 'en' || value === 'hi' || value === 'hinglish' ? value : 'auto'
   },
-  saveLanguage(value: 'auto' | 'en' | 'hi' | 'hinglish') { localStorage.setItem(LANG_KEY, value) },
+  saveLanguage(value: 'auto' | 'en' | 'hi' | 'hinglish') { try { localStorage.setItem(LANG_KEY, value) } catch {} },
   responseStyle(): 'balanced' | 'concise' | 'detailed' {
     const value = localStorage.getItem(RESPONSE_KEY)
     return value === 'concise' || value === 'detailed' ? value : 'balanced'
   },
-  saveResponseStyle(value: 'balanced' | 'concise' | 'detailed') { localStorage.setItem(RESPONSE_KEY, value) },
+  saveResponseStyle(value: 'balanced' | 'concise' | 'detailed') { try { localStorage.setItem(RESPONSE_KEY, value) } catch {} },
   clearChats() { localStorage.removeItem(CHAT_KEY) },
   clearGuest() { localStorage.removeItem(GUEST_KEY) },
 }
