@@ -11,6 +11,8 @@ export const Menu = (p: IconProps) => <I {...p}><path d="M4 7h16M4 12h16M4 17h16
 export const ChevronLeft = (p: IconProps) => <I {...p}><path d="m15 18-6-6 6-6"/></I>
 export const ChevronRight = (p: IconProps) => <I {...p}><path d="m9 18 6-6-6-6"/></I>
 export const X = (p: IconProps) => <I {...p}><path d="m6 6 12 12M18 6 6 18"/></I>
+export const Eye = (p: IconProps) => <I {...p}><path d="M2.5 12s3.4-5.5 9.5-5.5 9.5 5.5 9.5 5.5-3.4 5.5-9.5 5.5S2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></I>
+export const EyeOff = (p: IconProps) => <I {...p}><path d="m3 3 18 18"/><path d="M10.6 6.7A10.5 10.5 0 0 1 12 6.5c6.1 0 9.5 5.5 9.5 5.5a17.6 17.6 0 0 1-3.2 3.6M6.1 6.9C3.8 8.5 2.5 12 2.5 12s3.4 5.5 9.5 5.5c1 0 2-.1 2.9-.4"/><path d="M9.9 9.9a2.5 2.5 0 0 0 3.5 3.5"/></I>
 export const Send = (p: IconProps) => <I {...p}><path d="m4 4 16 8-16 8 3.5-8L4 4Z"/><path d="M7.5 12H20"/></I>
 export const Stop = (p: IconProps) => <I {...p}><rect x="7" y="7" width="10" height="10" rx="2"/></I>
 export const Paperclip = (p: IconProps) => <I {...p}><path d="m20 11.2-7.9 7.9a5 5 0 0 1-7.1-7.1l8.2-8.2a3.4 3.4 0 1 1 4.8 4.8l-8.2 8.2a1.8 1.8 0 0 1-2.5-2.5l7.2-7.2"/></I>
