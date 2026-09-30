@@ -570,3 +570,6 @@
 .contact-detail-item{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1 1 220px}
 .contact-detail-label{font-size:9px!important;text-transform:uppercase;letter-spacing:.06em;color:var(--faint)!important;font-weight:750}
 .contact-detail-item strong{font-size:11px;font-weight:750;color:var(--text);overflow-wrap:anywhere}
+
+
+/* Final RafaAi responsive audit: mobile, tablet, desktop, public-page scrolling, and sidebar navigation. */
