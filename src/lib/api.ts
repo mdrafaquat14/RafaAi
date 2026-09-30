@@ -9,6 +9,7 @@ export interface GenerateArgs {
   guestId?: string
   classLevel?: string
   mode?: string
+  signal?: AbortSignal
 }
 
 export async function generateAnswer(args: GenerateArgs, onDelta?: (text: string) => void) {
@@ -24,6 +25,7 @@ export async function generateAnswer(args: GenerateArgs, onDelta?: (text: string
     method: 'POST',
     headers,
     body: JSON.stringify({ ...args, stream: true }),
+    signal: args.signal,
   })
 
   if (!response.ok) {
