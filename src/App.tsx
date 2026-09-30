@@ -57,7 +57,12 @@ export default function App() {
       window.removeEventListener('resize',updateViewport)
     }
   },[])
-  useEffect(()=>{ document.documentElement.dataset.theme=theme; storage.saveTheme(theme) },[theme])
+  useEffect(()=>{
+    document.documentElement.dataset.theme=theme
+    const themeMeta=document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
+    if(themeMeta) themeMeta.content=theme==='light'?'#f7f7f5':'#0a0b0f'
+    storage.saveTheme(theme)
+  },[theme])
 
   // Open an existing chat at the exact point where the student last left it: the latest messages.
   // While a new answer is streaming, keep the view at the bottom so the latest text stays visible.
