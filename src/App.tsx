@@ -296,7 +296,7 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      {sidebarOpen && <button className="sidebar-backdrop" aria-label="Close menu" onClick={() => setSidebarOpen(false)} />}
+      {sidebarOpen && <button className="sidebar-backdrop" aria-label="Close menu" onPointerDown={(event)=>{event.preventDefault();event.stopPropagation();setSidebarOpen(false)}} onClick={(event)=>{event.preventDefault();event.stopPropagation();setSidebarOpen(false)}} />}
       <Sidebar
         onAdmin={() => setAdminOpen(true)}
         isAdmin={profile?.role === 'admin'}
