@@ -91,13 +91,17 @@ export default function App() {
   },[activeChat?.messages.length,busy])
   useEffect(()=>{ storage.saveChats(chats) },[chats])
   useEffect(()=>{
-    const onKey=(event:KeyboardEvent)=>{ if(event.key==='Escape'){setSidebarOpen(false);setSidebarCollapsed(true)} }
+    const onKey=(event:KeyboardEvent)=>{
+      if(event.key==='Escape'){
+        setSidebarOpen(false)
+        setSidebarCollapsed(true)
+      }
+    }
     const onPointerDown=(event:PointerEvent)=>{
       const target=event.target as HTMLElement|null
-      if(!target || target.closest('.sidebar')) return
-      if(target.closest('.mobile-menu')) return
-      if(window.innerWidth<=900) setSidebarOpen(false)
-      else setSidebarCollapsed(true)
+      if(window.innerWidth<=900 && target && !target.closest('.sidebar') && !target.closest('.mobile-menu')){
+        setSidebarOpen(false)
+      }
     }
     window.addEventListener('keydown',onKey)
     document.addEventListener('pointerdown',onPointerDown)
