@@ -1,18 +1,18 @@
 import { useMemo, useState } from 'react'
 import type { ChatSession } from '../types'
 import { Logo } from './Logo'
-import { BookOpen, ChevronLeft, MessageSquare, More, Plus, Search, Settings, Trash } from './Icons'
+import { BookOpen, ChevronLeft, MessageSquare, More, Plus, Search, Settings, Trash, X } from './Icons'
 
 interface Props {
   open:boolean; collapsed:boolean; chats:ChatSession[]; activeId:string|null; onClose:()=>void; onCollapse:()=>void; onNew:()=>void; onSelect:(id:string)=>void; onDelete:(id:string)=>void; onRename:(id:string,title:string)=>void; onLogin:()=>void; onSettings:()=>void; onAdmin:()=>void; isAdmin:boolean; userName:string|null; onLogout:()=>void
 }
-export function Sidebar({open,collapsed,chats,activeId,onCollapse,onNew,onSelect,onDelete,onRename,onLogin,onSettings,onAdmin,isAdmin,userName}:Props){
+export function Sidebar({open,collapsed,chats,activeId,onClose,onCollapse,onNew,onSelect,onDelete,onRename,onLogin,onSettings,onAdmin,isAdmin,userName}:Props){
   const [query,setQuery]=useState(''); const [menuId,setMenuId]=useState<string|null>(null)
   const filtered=useMemo(()=>chats.filter(c=>c.title.toLowerCase().includes(query.toLowerCase())),[chats,query])
-  return <aside className={`sidebar ${open?'is-open':''} ${collapsed?'is-collapsed':''}`} onClick={()=>{if(collapsed) onCollapse()}} onTouchStart={()=>{if(collapsed) onCollapse()}}>
+  return <aside className={`sidebar ${open?'is-open':''} ${collapsed?'is-collapsed':''}`}>
     <div className="sidebar-head">
-      <button className="brand-button" onClick={()=>collapsed?onCollapse():onNew()} aria-label={collapsed?'Open sidebar':'New chat'}><Logo compact />{!collapsed&&<span className="brand-head-name">RafaAi</span>}</button>
-      <button className="icon-button sidebar-collapse" onClick={(e)=>{e.stopPropagation();onCollapse()}} aria-label={collapsed?'Expand sidebar':'Collapse sidebar'}>{collapsed?<span className="collapse-glyph">›</span>:<ChevronLeft/>}</button>
+      <button className="brand-button" onClick={onNew} aria-label="New chat"><Logo compact />{!collapsed&&<span className="brand-head-name">RafaAi</span>}</button>
+      <button className="icon-button sidebar-collapse" onClick={(e)=>{e.stopPropagation();onCollapse()}} aria-label={collapsed?'Expand sidebar':'Collapse sidebar'}>{collapsed?<span className="collapse-glyph">›</span>:<ChevronLeft/>}</button>\n      <button className="icon-button sidebar-close-mobile" onClick={onClose} aria-label="Close sidebar"><X/></button>
     </div>
     <div className="sidebar-body">
       <button className="new-chat-button" onClick={onNew}><Plus/><span>New chat</span></button>
