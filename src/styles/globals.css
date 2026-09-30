@@ -422,3 +422,17 @@
   .legal-card p,.legal-card li{font-size:12px;line-height:1.7}
   .legal-footer{padding-bottom:env(safe-area-inset-bottom);gap:8px 15px}
 }
+
+/* Final mobile sidebar interaction fix */
+@media(max-width:900px){
+  .sidebar-backdrop{
+    z-index:55;
+    pointer-events:auto;
+    touch-action:manipulation;
+    cursor:pointer;
+  }
+  .sidebar{
+    z-index:60;
+    pointer-events:auto;
+  }
+}
