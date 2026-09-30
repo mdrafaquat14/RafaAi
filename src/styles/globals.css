@@ -364,3 +364,6 @@
 .auth-tabs button.signup-tab{font-weight:800}
 .forgot-link{display:inline-block!important}
 .auth-card .auth-verify-icon{margin-top:4px}
+
+/* Keep the guest account action visible on small screens. */
+@media(max-width:600px){.top-login{width:auto;min-width:150px;padding:0 12px;font-size:11px}.top-login span{display:inline}}
