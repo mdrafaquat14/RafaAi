@@ -13,6 +13,7 @@ import { SettingsModal } from './components/SettingsModal'
 import { CreditLimit, type CreditStatus } from './components/CreditLimit'
 import { AdminModal } from './components/AdminModal'
 import { LegalPage } from './components/LegalPage'
+import { ContactPage } from './components/ContactPage'
 
 const uid = () => `${Date.now()}-${Math.random().toString(36).slice(2,9)}`
 export default function App() {
@@ -271,6 +272,7 @@ export default function App() {
 
   const page=typeof window!=='undefined'?window.location.pathname.replace(/\/$/,''):'/'
   if(page==='/privacy' || page==='/terms' || page==='/about') return <LegalPage type={page.slice(1) as 'privacy'|'terms'|'about'} />
+  if(page==='/contact') return <ContactPage />
 
   return (
     <div className="app-shell">
