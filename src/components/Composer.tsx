@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { PromptMode } from '../types'
-import { Globe, ImageIcon, Paperclip, Send, Sparkles, X } from './Icons'
+import { ImageIcon, Paperclip, Send, Sparkles, X } from './Icons'
 
 interface Props { value:string; onChange:(v:string)=>void; onSend:()=>void; busy:boolean; mode:PromptMode; setMode:(m:PromptMode)=>void; attachment:File|null; setAttachment:(f:File|null)=>void; onStop:()=>void; compact?:boolean }
 export function Composer({value,onChange,onSend,busy,mode,setMode,attachment,setAttachment,onStop,compact}:Props) {
@@ -27,7 +27,7 @@ export function Composer({value,onChange,onSend,busy,mode,setMode,attachment,set
   function handleDrop(e:React.DragEvent<HTMLDivElement>){e.preventDefault();if(busy)return;chooseFile(e.dataTransfer.files?.[0]||null)}
   return <div ref={composerRef} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} className={`composer ${compact?'composer-compact':''} ${busy?'is-busy':''} ${dragging?'is-dragging':''}`}>
     {dragging&&<div className="drop-overlay"><div><Paperclip size={22}/><b>Drop file here</b><span>Images, PDF or supported documents · max 4 MB</span></div></div>}
-    {attachment&&<div className="attachment-preview">{attachment.type.startsWith('image/')?<ImageIcon size={16}/>:<Paperclip size={16}/>}<span>{attachment.name}</span><button onClick={()=>setAttachment(null)} disabled={busy}><X size={15}/></button></div>}
+    {attachment&&<div className="attachment-preview">{attachment.type.startsWith('image/')?<ImageIcon size={16}/>:<Paperclip size={16}/>}<span>{attachment.name}</span><button onClick={()=>setAttachment(null)} disabled={busy} aria-label="Remove attachment"><X size={15}/></button></div>}
     <div className="composer-main">
       <button className={`composer-tool ${toolsOpen?'selected':''}`} onClick={()=>setToolsOpen(!toolsOpen)} disabled={busy} aria-label="Add attachment"><Paperclip/></button>
       <textarea ref={inputRef} value={value} onChange={e=>onChange(e.target.value)} onKeyDown={handleKey} placeholder={busy?'RafaAi is thinking…':'Ask RafaAi anything…'} rows={1} disabled={busy}/>
