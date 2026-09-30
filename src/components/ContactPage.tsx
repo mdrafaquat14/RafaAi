@@ -47,7 +47,7 @@ export function ContactPage(){
  return <main className="contact-shell">
   <div className="contact-card">
    <div className="contact-brand"><img src="/rafaai-new-logo.png" alt="RafaAi" /><span>RafaAi</span></div>
-   <div className="contact-top"><a className="legal-back" href="/">← Back to RafaAi</a><button className="modal-close" onClick={()=>window.history.back()} aria-label="Close"><X/></button></div>
+   <div className="contact-top"><a className="legal-back" href="/">← Back to RafaAi</a><button className="modal-close" onClick={()=>window.location.assign('/')} aria-label="Close"><X/></button></div>
    <div className="legal-hero"><div className="eyebrow">CONTACT RAFAAI</div><h1>Contact Us</h1><p>Have a question, suggestion, issue, or feedback? Send us a message and choose one way for RafaAi to contact you.</p></div>
 
    {sent ? <div className="contact-success"><div className="contact-success-icon">✓</div><h2>Message sent</h2><p>Thanks for contacting RafaAi. Your message has been received by the RafaAi admin team.</p><button className="primary-wide" onClick={()=>setSent(false)}>Send another message</button></div> :
