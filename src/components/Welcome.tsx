@@ -10,10 +10,10 @@ const modes:{label:string;mode:PromptMode;icon:React.ReactNode;prompt:string}[]=
 export function Welcome({onPrompt}:{onPrompt:(text:string,mode:PromptMode)=>void}){
  return <section className="welcome"><div className="welcome-inner">
    <div className="welcome-mark"><img src="/rafaai-new-logo.png" alt="" /></div>
-   <div className="eyebrow">STUDENT-FIRST AI ASSISTANT</div>
-   <h1>What are you doing today?</h1>
-   <p className="welcome-subtitle">Ask a doubt, solve a question, learn a topic, or get help with your next study task.</p>
+   <div className="eyebrow">YOUR AI STUDY PARTNER</div>
+   <h1>How can I help you today?</h1>
+   <p className="welcome-subtitle">Ask a question, solve a problem, learn something new, or get help with your next task.</p>
    <div className="quick-modes" aria-label="Quick modes">{modes.map(item=><button key={item.label} onClick={()=>onPrompt(item.prompt,item.mode)}>{item.icon}<span>{item.label}</span></button>)}</div>
-   <div className="welcome-note">RafaAi can make mistakes. Check important answers with your teacher or trusted sources.</div>
- </div></section>
+   <div className="welcome-note">RafaAi can make mistakes. Check important information with a teacher or trusted source.</div>
+ </div><div className="site-links"><a href="/about">About</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></div></section>
 }
