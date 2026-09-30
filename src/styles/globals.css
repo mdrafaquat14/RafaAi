@@ -352,3 +352,15 @@
 .verify-resend-link:hover:not(:disabled){color:var(--text)}
 .verify-resend-link:disabled{opacity:.55}
 @media(max-width:600px){.verify-open-mail{height:50px;font-size:13px}.verify-resend-link{font-size:10px}}
+
+
+/* Auth UX: familiar two-tab account entry, password visibility, and recovery states */
+.password-field{position:relative;display:block}
+.password-field input{padding-right:46px}
+.password-eye{position:absolute;right:5px;top:6px;width:34px;height:32px;border-radius:8px;display:grid;place-items:center;color:var(--muted)}
+.password-eye:hover{background:var(--panel2);color:var(--text)}
+.auth-tabs button{transition:.16s}
+.auth-tabs button:hover:not(.active){background:var(--panel2);color:var(--text)}
+.auth-tabs button.signup-tab{font-weight:800}
+.forgot-link{display:inline-block!important}
+.auth-card .auth-verify-icon{margin-top:4px}
