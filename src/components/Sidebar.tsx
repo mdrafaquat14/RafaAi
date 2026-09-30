@@ -37,7 +37,7 @@ export function Sidebar({open,collapsed,chats,activeId,onCollapse,onNew,onSelect
     </div>
     <div className="sidebar-footer">
       {userName&&isAdmin&&<button className="side-link sidebar-settings-bottom" onClick={onAdmin}><Settings/><span>Admin access</span></button>}
-      {userName?<button className="side-link sidebar-settings-bottom" onClick={onSettings}><Settings/><span>Settings</span></button>:<button className="sidebar-login" onClick={onLogin}><span>Log in / Create account</span><span>→</span></button>}
+      {userName?<button className="side-link sidebar-settings-bottom" onClick={onSettings}><Settings/><span>Settings</span></button>:<button className="sidebar-login" onClick={onLogin}><span>Sign in</span><span>→</span></button>}
     </div>
   </aside>
 }
