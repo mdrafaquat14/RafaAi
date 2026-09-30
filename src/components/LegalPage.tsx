@@ -82,6 +82,6 @@ export function LegalPage({type}:{type:PageType}){
    <div className="legal-sections">{page.sections.map(section=><section key={section.heading}><h2>{section.heading}</h2>{section.paragraphs.map(p=><p key={p}>{p}</p>)}{section.bullets&&<ul>{section.bullets.map(item=><li key={item}>{item}</li>)}</ul>}</section>)}</div>
    <p className="legal-updated">Last updated: September 30, 2026</p>
   </article>
-  <nav className="legal-footer" aria-label="Legal pages"><button onClick={()=>go('/about')}>About</button><button onClick={()=>go('/privacy')}>Privacy Policy</button><button onClick={()=>go('/terms')}>Terms of Use</button></nav>
+  <nav className="legal-footer" aria-label="Legal pages"><button onClick={()=>go('/about')}>About</button><button onClick={()=>go('/privacy')}>Privacy Policy</button><button onClick={()=>go('/terms')}>Terms of Use</button><button onClick={()=>go('/contact')}>Contact Us</button></nav>
  </main>
 }
