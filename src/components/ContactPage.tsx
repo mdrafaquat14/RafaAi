@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import { X } from './Icons'
 import { supabase } from '../lib/supabase'
 
@@ -11,7 +11,7 @@ export function ContactPage(){
  const [error,setError]=useState('')
  const [sent,setSent]=useState(false)
 
- async function submit(e:React.FormEvent){
+ async function submit(e:FormEvent){
   e.preventDefault(); setError('')
   const cleanName=name.trim(), cleanMessage=message.trim()
   if(!cleanName || !cleanMessage){setError('Please enter your name and message.');return}
