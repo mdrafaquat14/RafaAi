@@ -78,16 +78,6 @@ export default function App() {
   },[activeChat?.messages.length,busy])
   useEffect(()=>{ storage.saveChats(chats) },[chats])
   useEffect(()=>{
-    const onPointerDown=(event:PointerEvent)=>{
-      if(!sidebarOpen || window.innerWidth>900) return
-      const target=event.target as Node|null
-      if(!target) return
-      const sidebar=document.querySelector('.sidebar')
-      const menuTrigger=(target as Element).closest?.('.mobile-menu')
-      if(sidebar?.contains(target) || menuTrigger) return
-      setSidebarOpen(false)
-    }
-    document.addEventListener('pointerdown',onPointerDown,true)
     const onKey=(event:KeyboardEvent)=>{
       if(event.key==='Escape'){
         setSidebarOpen(false)
@@ -96,7 +86,6 @@ export default function App() {
     }
     window.addEventListener('keydown',onKey)
     return ()=>{
-      document.removeEventListener('pointerdown',onPointerDown,true)
       window.removeEventListener('keydown',onKey)
     }
   },[])
