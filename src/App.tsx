@@ -12,6 +12,7 @@ import { AuthModal } from './components/AuthModal'
 import { SettingsModal } from './components/SettingsModal'
 import { CreditLimit, type CreditStatus } from './components/CreditLimit'
 import { AdminModal } from './components/AdminModal'
+import { LegalPage } from './components/LegalPage'
 
 const uid = () => `${Date.now()}-${Math.random().toString(36).slice(2,9)}`
 function simpleGreeting(text:string): string | null {
@@ -285,6 +286,9 @@ export default function App() {
     : creditLimitReached
       ? <CreditLimit status={creditStatus} onRequest={requestMoreAccess}/>
       : <><div className="composer-credit-row">{creditMeter}</div>{composer}</>
+
+  const page=typeof window!=='undefined'?window.location.pathname.replace(/\/$/,''):'/'
+  if(page==='/privacy' || page==='/terms' || page==='/about') return <LegalPage type={page.slice(1) as 'privacy'|'terms'|'about'} />
 
   return (
     <div className="app-shell">
