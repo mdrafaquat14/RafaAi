@@ -500,3 +500,60 @@
 .contact-card{box-shadow:var(--shadow)}
 .contact-admin-details{display:flex;gap:8px;flex-wrap:wrap}
 .contact-admin-details span{flex:1 1 220px}
+
+/* Public-page final layout polish */
+.welcome{flex-direction:column;align-items:center}
+.welcome-inner{flex:0 0 auto}
+.site-links{flex:0 0 auto;margin-top:24px}
+.contact-shell{
+  height:100dvh;
+  min-height:100dvh;
+  overflow-y:auto;
+  overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior-y:auto;
+  background:var(--bg);
+  padding:22px 14px max(34px,env(safe-area-inset-bottom));
+}
+.contact-card{
+  width:min(620px,100%);
+  margin:0 auto;
+  padding:22px 24px 24px;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:18px;
+  box-shadow:var(--shadow);
+}
+.contact-brand{margin-bottom:8px}
+.contact-brand img{width:30px;height:30px}
+.contact-brand span{font-size:16px}
+.contact-top{margin-bottom:13px}
+.contact-card .legal-hero h1{font-size:30px;letter-spacing:-.04em;margin:6px 0 8px}
+.contact-card .legal-hero p{font-size:12px;line-height:1.6;margin-bottom:0}
+.contact-form{margin-top:17px}
+.contact-form>label{margin-bottom:12px}
+.contact-method-box{
+  border:1px solid var(--line2);
+  background:var(--bg);
+  border-radius:12px;
+  padding:10px;
+  margin-bottom:12px;
+}
+.contact-method-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 1px 8px;color:var(--muted);font-size:11px;font-weight:750}
+.contact-method-head b{color:var(--accent)}
+.contact-method-head small{color:var(--faint);font-size:10px;font-weight:600}
+.contact-method-tabs{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:3px;border:1px solid var(--line);background:var(--panel);border-radius:9px}
+.contact-method-tabs button{height:31px;border-radius:7px;color:var(--muted);font-size:11px;font-weight:750}
+.contact-method-tabs button.active{background:var(--panel2);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.contact-method-box input{margin-top:8px}
+.contact-required-note{margin:4px 0 11px}
+.contact-submit{height:42px}
+@media(max-width:600px){
+  .welcome{padding:30px 14px 32px}
+  .site-links{margin-top:20px;max-width:100%}
+  .site-links a{min-height:30px;padding:0 9px;font-size:10px}
+  .contact-shell{padding:10px 9px max(24px,env(safe-area-inset-bottom))}
+  .contact-card{width:100%;padding:18px 16px 20px;border-radius:16px}
+  .contact-card .legal-hero h1{font-size:27px}
+  .contact-card .legal-hero p{font-size:11.5px}
+}
