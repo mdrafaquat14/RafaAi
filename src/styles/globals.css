@@ -492,3 +492,11 @@
  .legal-footer button{height:31px;padding:0 8px;font-size:10px}
  .contact-admin-top{display:block}.contact-admin-top small{display:block;margin-top:5px}
 }
+
+
+.contact-brand{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px}
+.contact-brand img{width:34px;height:34px;object-fit:contain}
+.contact-brand span{font-size:17px;font-weight:800;letter-spacing:-.03em}
+.contact-card{box-shadow:var(--shadow)}
+.contact-admin-details{display:flex;gap:8px;flex-wrap:wrap}
+.contact-admin-details span{flex:1 1 220px}
