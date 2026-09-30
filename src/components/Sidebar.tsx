@@ -31,11 +31,15 @@ export function Sidebar({open,collapsed,chats,activeId,onClose,onCollapse,onNew,
         </div>
       </>}
       <div className="sidebar-spacer"/>
-      <div className="sidebar-links">
-        <button className="side-link" onClick={()=>window.open('https://rafafocus.vercel.app','_blank','noopener,noreferrer')}><BookOpen/><span>Open RafaFocus</span></button>
-      </div>
     </div>
     <div className="sidebar-footer">
+      <button className="side-link rafafocus-link" onClick={()=>window.open('https://rafafocus.vercel.app','_blank','noopener,noreferrer')}><BookOpen/><span>Open RafaFocus</span></button>
+      <nav className="sidebar-info-links" aria-label="Site information">
+        <a href="/about">About</a>
+        <a href="/privacy">Privacy Policy</a>
+        <a href="/terms">Terms of Use</a>
+        <a href="/contact">Contact Us</a>
+      </nav>
       {userName&&isAdmin&&<button className="side-link sidebar-settings-bottom" onClick={onAdmin}><Settings/><span>Admin access</span></button>}
       {userName?<button className="side-link sidebar-settings-bottom" onClick={onSettings}><Settings/><span>Settings</span></button>:<button className="sidebar-login" onClick={onLogin}><span>Sign in</span><span>→</span></button>}
     </div>
