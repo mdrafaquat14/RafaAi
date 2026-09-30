@@ -9,13 +9,13 @@ interface Props {
 export function Sidebar({open,collapsed,chats,activeId,onClose,onCollapse,onNew,onSelect,onDelete,onRename,onLogin,onSettings,onAdmin,isAdmin,userName}:Props){
   const [query,setQuery]=useState(''); const [menuId,setMenuId]=useState<string|null>(null)
   const filtered=useMemo(()=>chats.filter(c=>c.title.toLowerCase().includes(query.toLowerCase())),[chats,query])
-  return <aside className={`sidebar ${open?'is-open':''} ${collapsed?'is-collapsed':''}`} onClick={()=>{if(collapsed && window.innerWidth>900) onCollapse()}} onTouchStart={()=>{if(collapsed && window.innerWidth>900) onCollapse()}}>
+  return <aside className={`sidebar ${open?'is-open':''} ${collapsed?'is-collapsed':''}`}>
     <div className="sidebar-head">
       <button className="brand-button" onClick={()=>collapsed?onCollapse():onNew()} aria-label={collapsed?"Expand sidebar":"New chat"}><Logo compact />{!collapsed&&<span className="brand-head-name">RafaAi</span>}</button>
       <button className="icon-button sidebar-collapse" onClick={(e)=>{e.stopPropagation();onCollapse()}} aria-label={collapsed?'Expand sidebar':'Collapse sidebar'}>{collapsed?<span className="collapse-glyph">›</span>:<ChevronLeft/>}</button>
     </div>
     <div className="sidebar-body">
-      <button className="new-chat-button" onClick={()=>collapsed?onCollapse():onNew()}><Plus/><span>New chat</span></button>
+      <button className="new-chat-button" onClick={(e)=>{e.stopPropagation();onNew()}}><Plus/><span>New chat</span></button>
       <div className="search-box"><Search/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search chats" aria-label="Search chats"/></div>
       {!collapsed&&<>
         <div className="section-label">Recent</div>
