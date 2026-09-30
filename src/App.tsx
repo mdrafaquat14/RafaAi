@@ -15,19 +15,6 @@ import { AdminModal } from './components/AdminModal'
 import { LegalPage } from './components/LegalPage'
 
 const uid = () => `${Date.now()}-${Math.random().toString(36).slice(2,9)}`
-function simpleGreeting(text:string): string | null {
-  const normalized=text.trim().toLowerCase().replace(/[!?.,]+$/g,'').replace(/\s+/g,' ')
-  if(/^(hi|hii|hiii|hello|hey|heyy|good morning|good afternoon|good evening)$/.test(normalized)){
-    if(normalized.startsWith('good morning')) return 'Good morning! How can I help you today?'
-    if(normalized.startsWith('good afternoon')) return 'Good afternoon! How can I help you today?'
-    if(normalized.startsWith('good evening')) return 'Good evening! How can I help you today?'
-    return 'Hi! How can I help you today?'
-  }
-  return null
-}
-
-const RAFAAI_IDENTITY = 'You are RafaAi, a student-first AI assistant created for learners. Your public assistant name is RafaAi. Handle identity questions by intent, not by keyword lists or fixed-trigger matching. Do not introduce yourself, state your name, explain your origin, or mention your founder unless the user is actually asking about who you are, your name, your identity, your origin/creator/founder, or a closely equivalent natural-language question. A simple greeting such as hi, hii, hello, hey, good morning, or similar social opening is only a greeting: respond naturally and briefly without an unsolicited introduction. If the user asks what your name is or otherwise asks your name, say that your name is RafaAi. If the user asks who you are or what you are, explain briefly that you are RafaAi, an AI assistant. If the user asks who created, founded, made, built, owns, runs, or is behind RafaAi, answer naturally in the same style and language as the user's question, using the exact relationship they asked about: Md Rafaquat is the founder/creator/builder/owner/person behind RafaAi, as appropriate to the wording. Do not force a fixed sentence or keyword-triggered response. For questions such as 'Who made you?', answer naturally as 'I was created by Md Rafaquat.' For 'Who is your founder?', say 'My founder is Md Rafaquat.' For 'Who owns you?', say 'RafaAi was created and is run by Md Rafaquat.' Match Hindi, English, or Hinglish and the user's conversational tone. Answer only the identity detail requested rather than dumping a full introduction. Never claim to be Gemini or present the underlying model provider as your own identity. Be friendly, clear, intelligent, and natural. Support English, Hindi, and Hinglish. IMPORTANT FOR CLASS 10 STUDENTS: default to very simple, textbook-style Hindi when the student asks in Hindi/Hinglish. Use English terms only when they are standard syllabus terms, and explain each such term in simple Hindi the first time. Do not fill an answer with unnecessary English labels. Teach concept first, then a small easy example, then formula, then step-by-step solving when requested. Follow every part of the student request. If the student asks for a complete explanation, finish every requested section before stopping. Never intentionally truncate a response, leave a section unfinished, or end mid-sentence. Prefer concise but complete answers over formula dumps. For formulas, use Markdown math syntax: $x$ for inline math and $$...$$ for displayed equations; never leave raw LaTeX delimiters or formula code visible.'
-
 export default function App() {
   const [theme,setTheme] = useState<Theme>(storage.theme())
   const [chats,setChats] = useState<ChatSession[]>(storage.chats())
@@ -194,9 +181,7 @@ export default function App() {
     if(!signedIn && guestReplies>=5){setAuthOpen(true);return}
     if(signedIn && profile?.role !== 'admin' && creditLimitReached && creditStatus?.remaining === 0){setError('Your daily AI credit limit has been reached.');return}
     setError('')
-    const greeting=simpleGreeting(clean)
-    if(greeting){
-      const chat=ensureChat(clean)
+    const chat=ensureChat(clean)
       const userMsg:ChatMessage={id:uid(),role:'user',content:clean,createdAt:Date.now()}
       const assistantMsg:ChatMessage={id:uid(),role:'assistant',content:greeting,createdAt:Date.now()}
       updateChat({...chat,messages:[...chat.messages,userMsg,assistantMsg],updatedAt:Date.now()})
@@ -215,7 +200,7 @@ export default function App() {
     abortControllerRef.current = abortController
     try {
       if(!isSupabaseConfigured) throw new Error('RafaAi backend is not connected yet. Add the Supabase environment variables from .env.example.')
-      const contents=[{role:'user',parts:[{text:`[RafaAi behavior instructions — follow internally]\n${RAFAAI_IDENTITY}`}]},...nextMessages.map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}, ...(m.role==='user' && m.attachmentDataUrl ? [{inline_data: dataUrlToInlineData(m.attachmentDataUrl)}] : [])]}))]
+      const contents=[...nextMessages.map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}, ...(m.role==='user' && m.attachmentDataUrl ? [{inline_data: dataUrlToInlineData(m.attachmentDataUrl)}] : [])]}))]
       const detectedClass=inferClassFromMessage(clean)
       const effectiveClass=detectedClass||profile?.class_level||undefined
       const result = await generateAnswer({contents,guest:!signedIn,guestQuestionNumber:!signedIn?guestReplies+1:undefined,guestId:!signedIn?storage.guestId():undefined,classLevel:effectiveClass,mode,signal:abortController.signal},(delta)=>{
@@ -253,7 +238,7 @@ export default function App() {
     const abortController = new AbortController()
     abortControllerRef.current = abortController
     try {
-      const contents=[{role:'user',parts:[{text:`[RafaAi behavior instructions — follow internally]\n${RAFAAI_IDENTITY}`}]},...withoutAssistant.map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}, ...(m.role==='user' && m.attachmentDataUrl ? [{inline_data: dataUrlToInlineData(m.attachmentDataUrl)}] : [])]}))]
+      const contents=[...withoutAssistant.map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}, ...(m.role==='user' && m.attachmentDataUrl ? [{inline_data: dataUrlToInlineData(m.attachmentDataUrl)}] : [])]}))]
       const lastUserMessage=withoutAssistant.filter(m=>m.role==='user').at(-1)?.content||''
       const detectedClass=inferClassFromMessage(lastUserMessage)
       const effectiveClass=detectedClass||profile?.class_level||undefined
