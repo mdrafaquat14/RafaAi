@@ -3,9 +3,9 @@ import { useEffect } from 'react'
 type PageType='privacy'|'terms'|'about'
 type Section={heading:string;paragraphs:string[];bullets?:string[]}
 
-const content:Record<PageType,{title:string;eyebrow:string;intro:string;sections:Section[]}>={
+const content:Record<PageType,{title:string;description:string;eyebrow:string;intro:string;sections:Section[]}>={
 about:{
- title:'About RafaAi',eyebrow:'ABOUT RAFAAI',
+ title:'About RafaAi',description:'Learn what RafaAi is, who created it, what it can do for students, and how it is designed as a student-first AI learning assistant.',eyebrow:'ABOUT RAFAAI',
  intro:'RafaAi is a student-first AI assistant created to make learning, problem solving, studying, writing, and everyday questions easier through a simple chat experience.',
  sections:[
   {heading:'What is RafaAi?',paragraphs:['RafaAi is an AI learning assistant for students and learners. You can ask questions in natural language, request explanations, work through problems, practise a topic, or ask for help with writing.','The goal is to help you understand and practise, not replace your own thinking.']},
@@ -17,7 +17,7 @@ about:{
   {heading:'Responsible use',paragraphs:['Use RafaAi as a learning and productivity tool. Follow your school, teacher, examination, and assignment rules when using AI-generated help.']}
  ]},
 privacy:{
- title:'Privacy Policy',eyebrow:'PRIVACY',
+ title:'Privacy Policy',description:'Read the RafaAi Privacy Policy covering account information, chat history, AI requests, browser storage, security, retention, and user choices.',eyebrow:'PRIVACY',
  intro:'This Privacy Policy explains what information the current RafaAi website can handle, why it is used, where it is stored, and what choices are available.',
  sections:[
   {heading:'1. Scope',paragraphs:['This policy applies to the current RafaAi website and its described features. Third-party services used by RafaAi may have their own privacy policies and terms.']},
@@ -34,7 +34,7 @@ privacy:{
   {heading:'12. Changes',paragraphs:['RafaAi may update this policy when the product, infrastructure, or data practices change. The latest version will be published here with an updated date.']}
  ]},
 terms:{
- title:'Terms of Use',eyebrow:'TERMS',
+ title:'Terms of Use',description:'Read the RafaAi Terms of Use covering accounts, AI-generated answers, academic integrity, files, misuse, usage limits, availability, and third-party services.',eyebrow:'TERMS',
  intro:'These Terms of Use describe the basic rules for using RafaAi. Use the service responsibly and follow applicable laws and school rules.',
  sections:[
   {heading:'1. Using RafaAi',paragraphs:['RafaAi is an AI-assisted learning and productivity service. Use it for lawful, constructive purposes and do not interfere with the service, other users, or its supporting infrastructure.']},
@@ -54,7 +54,23 @@ terms:{
 
 export function LegalPage({type}:{type:PageType}){
  const page=content[type]
- useEffect(()=>{document.title=page.title+' — RafaAi';window.scrollTo(0,0)},[page.title])
+ useEffect(()=>{
+  const canonical='https://rafaaii.vercel.app/'+(type==='about'?'about':type)
+  document.title=page.title+' — RafaAi'
+  const setMeta=(selector:string,content:string,attr:'name'|'property'='name')=>{
+   let el=document.head.querySelector<HTMLMetaElement>(`meta[${attr}="${selector}"]`)
+   if(!el){el=document.createElement('meta');el.setAttribute(attr,selector);document.head.appendChild(el)}
+   el.setAttribute('content',content)
+  }
+  setMeta('description',page.description)
+  setMeta('robots','index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1')
+  setMeta('og:type','article','property');setMeta('og:title',page.title+' — RafaAi','property');setMeta('og:description',page.description,'property');setMeta('og:url',canonical,'property');setMeta('og:site_name','RafaAi','property')
+  setMeta('twitter:card','summary');setMeta('twitter:title',page.title+' — RafaAi');setMeta('twitter:description',page.description)
+  let link=document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]')
+  if(!link){link=document.createElement('link');link.rel='canonical';document.head.appendChild(link)}
+  link.href=canonical
+  window.scrollTo(0,0)
+ },[page.title,page.description,type])
  const go=(path:string)=>window.location.assign(path)
  return <main className="legal-page">
   <header className="legal-header">
