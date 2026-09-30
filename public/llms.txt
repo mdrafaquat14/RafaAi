@@ -1,0 +1,40 @@
+# RafaAi
+
+> RafaAi is a student-first AI assistant for learning, solving questions, studying, writing, and understanding difficult topics.
+
+## Official website
+
+https://rafaaii.vercel.app/
+
+## What RafaAi does
+
+- Explains concepts in simple language
+- Solves questions step by step
+- Helps students study topics
+- Helps with writing and everyday tasks
+- Provides practice questions
+- Supports student-focused learning workflows
+
+## Audience
+
+RafaAi is designed as a student-first AI assistant, including support for school learning and exam preparation.
+
+## Creator
+
+Md Rafaquat
+
+## Official pages
+
+- Home: https://rafaaii.vercel.app/
+- About: https://rafaaii.vercel.app/about
+- Privacy Policy: https://rafaaii.vercel.app/privacy
+- Terms of Use: https://rafaaii.vercel.app/terms
+
+## Machine-readable sources
+
+- Sitemap: https://rafaaii.vercel.app/sitemap.xml
+- Robots: https://rafaaii.vercel.app/robots.txt
+
+## Notes
+
+This file provides a concise factual description of RafaAi for systems that choose to use llms.txt-style site information. It is supplementary to the website's normal HTML, sitemap, robots.txt, and structured data.
