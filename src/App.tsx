@@ -104,21 +104,39 @@ export default function App() {
       new URLSearchParams(window.location.search).get('type') === 'recovery'
     )
     if(recoveryLink) setAuthOpen(true)
-    supabase.auth.getSession().then(async ({data})=>{
-      const session=data.session
-      setUser(session?.user?{id:session.user.id,email:session.user.email}:null)
+
+    // Keep the auth-state callback synchronous. Supabase warns against awaiting
+    // Supabase calls inside onAuthStateChange because it can deadlock auth refresh.
+    const applySession = (session:any) => {
+      const nextUser = session?.user ? {id:session.user.id,email:session.user.email} : null
+      setUser(nextUser)
       setCreditStatus(null)
-      // Recovery links can establish the session before onAuthStateChange subscribes.
-      // Detecting the recovery URL above guarantees the password form is shown on first load.
-      if(recoveryLink && !session?.user) setAuthOpen(true)
-      if(session?.user) { const p=await getProfile(session.user.id).catch(()=>null); setProfile(p); if(p?.role==='admin'){ setCreditStatus({ready:true,unlimited:true,remaining:null,limit:null,reset_at:null}) } else { setCreditStatus(null); setTimeout(()=>refreshCredits(session.user.id),0) } }
+      if(!session?.user){
+        setProfile(null)
+        return
+      }
+      const userId = session.user.id
+      // Profile/credit work is deliberately deferred outside the auth callback.
+      setTimeout(async()=>{
+        const p=await getProfile(userId).catch(()=>null)
+        setProfile(p)
+        if(p?.role==='admin'){
+          setCreditStatus({ready:true,unlimited:true,remaining:null,limit:null,reset_at:null})
+        }else{
+          setCreditStatus(null)
+          refreshCredits(userId)
+        }
+      },0)
+    }
+
+    supabase.auth.getSession().then(({data})=>{
+      applySession(data.session)
+      if(recoveryLink && !data.session?.user) setAuthOpen(true)
     })
-    const {data:listener}=supabase.auth.onAuthStateChange(async (event,session)=>{
+
+    const {data:listener}=supabase.auth.onAuthStateChange((event,session)=>{
       if(event==='PASSWORD_RECOVERY') setAuthOpen(true)
-      setUser(session?.user?{id:session.user.id,email:session.user.email}:null)
-      setCreditStatus(null); 
-      if(session?.user) { const p=await getProfile(session.user.id).catch(()=>null); setProfile(p); if(p?.role==='admin'){ setCreditStatus({ready:true,unlimited:true,remaining:null,limit:null,reset_at:null});  } else { setCreditStatus(null);  setTimeout(()=>refreshCredits(session.user.id),0) } }
-      else { setProfile(null); setCreditStatus(null) }
+      applySession(session)
     })
     return ()=>listener.subscription.unsubscribe()
   },[])
